@@ -1,0 +1,17 @@
+* Benchmarks
+
+| Name      | Done | Compiles | Checks |
+|-----------+------+----------+--------|
+| AsyncP    |      |          |        |
+| ConcDB    |      |          |        |
+| DistDB    |      |          |        |
+| Firewall  |      |          |        |
+| MapReduce | +    | +        | -      |
+| MultiPing |      |          |        |
+| Parikh    |      |          |        |
+| PingDet   |      |          |        |
+| PingIter  |      |          |        |
+| PingSym   |      |          |        |
+| PingSym2  |      |          |        |
+| Registry  |      |          |        |
+| WorkSteal |      |          |        |

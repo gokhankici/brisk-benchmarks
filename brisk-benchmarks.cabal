@@ -1,14 +1,12 @@
 name:                brisk-benchmarks
 version:             0.1.0.0
--- synopsis:
--- description:
-homepage:            https://github.com/gokhankici/brisk-benchmarks#readme
+homepage:            https://github.com/gokhankici/brisk-benchmarks
 author:              Rami Gokhan Kici
 category:            Web
 build-type:          Simple
 cabal-version:       >=1.10
 
-executable test
+executable brisk-benchmarks
   hs-source-dirs:      src
   main-is:             Main.hs
   ghc-options:         -O2 -threaded -Wall
