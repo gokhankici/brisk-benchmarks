@@ -2,8 +2,10 @@
 
 import Prelude hiding (FilePath)
 import Turtle
-import Data.Text as T (pack, append)
+import Data.Text as T (pack, unpack, append)
 import Filesystem.Path.CurrentOS (encodeString)
+import Control.Monad
+import System.Console.ANSI
 
 -- ARGUMENTS
 
@@ -23,20 +25,24 @@ parser = (,) <$> (many $ (,) <$> bmkParser <*> binderParser)
              <*> plParser
 
 defaultArgs :: [Input]
-defaultArgs = [ ("src/MapReduce/Master.hs", "master") ]
+defaultArgs = [ ("src/MapReduce/Master.hs", "master")
+              ,( "src/AsyncP/Master.hs", "master")
+              ]
 
 -- TESTING
 
-runBenchmarks :: (MonadIO io) => [Input] -> io ()
-runBenchmarks _ = return ()
+runBenchmarks :: [Input] -> IO ()
+runBenchmarks args = forM_ args $ \ arg -> runBenchmark arg >> echo ""
 
-runBenchmark :: (MonadIO io) => Input -> io ExitCode
+runBenchmark :: Input -> IO ExitCode
 runBenchmark (fn,n) = do
- proc "stack" [ "exec", "--"
-              , "brisk"
-              , "--file", fromPath fn
-              , "--binder", n
-              ] empty 
+  info $ fromPath (dirname fn) <++> " - " <++> n
+  setSGR [Reset]
+  proc "stack" [ "exec", "--"
+               , "brisk"
+               , "--file", fromPath fn
+               , "--binder", n
+               ] empty 
 
 emitProlog :: (MonadIO io) => FilePath -> Text -> io ExitCode
 emitProlog fn n = proc "stack" [ "ghc", "--"
@@ -69,3 +75,17 @@ main = do
 
 fromPath :: FilePath -> Text
 fromPath = T.pack . encodeString
+
+info, success, failure :: Text -> IO ()
+info    = colored Blue
+success = colored Green
+failure = colored Red
+
+colored :: Color -> Text -> IO ()
+colored c t = do
+  setSGR [ SetColor Foreground Vivid c
+         , SetConsoleIntensity BoldIntensity
+         ]
+  putStr $ unpack t
+  setSGR [Reset]
+  putStrLn ""

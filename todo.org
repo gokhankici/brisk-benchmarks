@@ -1,17 +1,22 @@
 * Benchmarks
 
-| Name      | Done | Compiles | Checks |
+| Done      | Name | Compiles | Checks |
 |-----------+------+----------+--------|
 | AsyncP    |      |          |        |
 | ConcDB    |      |          |        |
 | DistDB    |      |          |        |
-| Firewall  |      |          |        |
 | MapReduce | +    | +        | -      |
 | MultiPing |      |          |        |
-| Parikh    |      |          |        |
 | PingDet   |      |          |        |
 | PingIter  |      |          |        |
 | PingSym   |      |          |        |
 | PingSym2  |      |          |        |
 | Registry  |      |          |        |
 | WorkSteal |      |          |        |
+
+* Non-parametric benchmarks
+
+| Done     | Name | Compiles | Checks |
+|----------+------+----------+--------|
+| Firewall |      |          |        |
+| Parikh   |      |          |        |
