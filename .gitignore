@@ -5,3 +5,9 @@
 *.o
 *.dyn*
 *.swp
+
+\#*
+.\#*
+
+build_failed
+query_failed
