@@ -27,12 +27,18 @@ library
                      , MapReduce.Utils
                      , AsyncP.PingServer
                      , AsyncP.Master
+                     , PingDet.PingServer
+                     , PingDet.Master
                      , MultiPing.PingServer
                      , MultiPing.Master
                      , ConcDB.Utils
                      , ConcDB.Client
                      , ConcDB.Database
-
+                     , DistDB.Utils
+                     , DistDB.Client
+                     , DistDB.Worker
+                     , DistDB.Database
+                     
   other-modules:       MapReduce.MapReduce
 
   default-language:    Haskell2010

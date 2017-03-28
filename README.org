@@ -4,10 +4,10 @@
 |-----------+------+----------+----------|
 | AsyncP    | +    | +        | deadlock |
 | ConcDB    | +    | +        | not snd  |
-| DistDB    |      |          |          |
+| DistDB    | +    | +        | not snd  |
 | MapReduce | +    | +        | deadlock |
 | MultiPing | +    | +        | deadlock |
-| PingDet   |      |          |          |
+| PingDet   | +    | +        | deadlock |
 | PingIter  |      |          |          |
 | PingSym   |      |          |          |
 | PingSym2  |      |          |          |
