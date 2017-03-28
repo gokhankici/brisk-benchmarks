@@ -9,12 +9,13 @@ cabal-version:       >=1.10
 executable brisk-benchmarks
   hs-source-dirs:      src
   main-is:             Main.hs
-  ghc-options:         -O2 -threaded -Wall
+  ghc-options:         -O2 -threaded -Wall -with-rtsopts=-N3
   build-depends:       base >= 4.7 && < 5
                      , turtle
                      , system-filepath
                      , text
                      , ansi-terminal
+                     , parallel-io
 
 library
   hs-source-dirs:      src

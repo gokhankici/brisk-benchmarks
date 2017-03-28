@@ -6,8 +6,11 @@ import qualified Data.Text as T (pack, unpack, append)
 import Filesystem.Path.CurrentOS (encodeString)
 import Control.Monad
 import System.Console.ANSI
+import Control.Concurrent.ParallelIO.Global
 
+-- -----------------------------------------------------------------------------
 -- ARGUMENTS
+-- -----------------------------------------------------------------------------
 
 runsFolder :: FilePath
 runsFolder = "runs"
@@ -32,9 +35,9 @@ defaultArgs = [ ("src/MapReduce/Master.hs", "master")
               ,( "src/AsyncP/Master.hs", "master")
               ]
 
+-- -----------------------------------------------------------------------------
 -- TESTING
-
-type Output = Either Line Line
+-- -----------------------------------------------------------------------------
 
 runBenchmarks :: [Input] -> IO ()
 runBenchmarks args = forM_ args $ \_arg -> runBenchmark _arg >> echo ""
@@ -57,7 +60,7 @@ runBenchmark (fn,n) = do
 
 emitProlog :: FilePath -> Text -> IO ()
 emitProlog fn n = do
-  info $ fromPath (dirname fn) <++> " - " <++> n
+  info $ fromPath (dirname fn) <++> " - " <++> n <++> " [PROLOG]"
   sh $ do
     let outputFile = runsFolder </> dirname fn <.> "run.pl"
     rmf outputFile
@@ -72,8 +75,9 @@ emitProlog fn n = do
   success $ fromPath (dirname fn) <++> " - " <++> n <++> " (DONE)"
   return ()
 
-                                
+-- -----------------------------------------------------------------------------
 -- MAIN
+-- -----------------------------------------------------------------------------
 
 main :: IO ()
 main = do
@@ -82,11 +86,16 @@ main = do
   let args' = case args of
                 [] -> defaultArgs
                 _  -> args
-  if emitPl
-    then sh $ parallel [ emitProlog fn n | (fn,n) <- args' ]
-    else sh $ parallel [ runBenchmark arg | arg <- args' ]
+  _ <- parallelInterleaved $
+    if emitPl
+      then [ emitProlog fn n | (fn,n) <- args' ]
+      else [ runBenchmark a | a <- args' ]
 
+  stopGlobalPool
+
+-- -----------------------------------------------------------------------------
 -- HELPER FUNCTIONS
+-- -----------------------------------------------------------------------------
 
 (<++>) :: Text -> Text -> Text
 (<++>) = T.append
@@ -104,9 +113,8 @@ colored c t = do
   setSGR [ SetColor Foreground Vivid c
          , SetConsoleIntensity BoldIntensity
          ]
-  putStr $ T.unpack t
+  putStrLn $ T.unpack t
   setSGR [Reset]
-  putStrLn ""
 
 test :: (MonadIO io) => io Bool -> io ExitCode
 test action = do
