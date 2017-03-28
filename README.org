@@ -11,7 +11,7 @@
 | PingIter  | +    | +        | deadlock |
 | PingSym   | +    | +        | +        |
 | PingSym2  | +    | +        | not snd  |
-| Registry  |      |          |          |
+| Registry  | +    | +        | deadlock |
 | WorkSteal | +    | +        | deadlock |
 
 * Non-parametric benchmarks

@@ -48,6 +48,10 @@ library
                      , DistDB.Client
                      , DistDB.Worker
                      , DistDB.Database
+                     , Registry.Utils
+                     , Registry.Client
+                     , Registry.Registry
+                     , Registry.Master
                      
   other-modules:       MapReduce.MapReduce
 
