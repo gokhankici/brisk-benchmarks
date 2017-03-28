@@ -8,11 +8,11 @@
 | MapReduce | +    | +        | deadlock |
 | MultiPing | +    | +        | deadlock |
 | PingDet   | +    | +        | deadlock |
-| PingIter  |      |          |          |
-| PingSym   |      |          |          |
-| PingSym2  |      |          |          |
-| Registry  |      |          |          |
-| WorkSteal |      |          |          |
+| PingIter  | +    | +        | deadlock |
+| PingSym   | +    | +        | +        |
+| PingSym2  | +    | +        | not snd  |
+| Registry  | +    | +        | deadlock |
+| WorkSteal | +    | +        | deadlock |
 
 * Non-parametric benchmarks
 
