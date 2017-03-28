@@ -12,7 +12,7 @@
 | PingSym   | +    | +        | +        |
 | PingSym2  | +    | +        | not snd  |
 | Registry  |      |          |          |
-| WorkSteal |      |          |          |
+| WorkSteal | +    | +        | deadlock |
 
 * Non-parametric benchmarks
 

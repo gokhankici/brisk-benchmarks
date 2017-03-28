@@ -25,6 +25,9 @@ library
                      , MapReduce.Master
                      , MapReduce.Queue
                      , MapReduce.Utils
+                     , WorkSteal.Mapper
+                     , WorkSteal.Queue
+                     , WorkSteal.Utils
                      , AsyncP.PingServer
                      , AsyncP.Master
                      , PingDet.PingServer

@@ -32,6 +32,7 @@ parser = (,) <$> (many $ (,) <$> bmkParser <*> binderParser)
 
 defaultArgs :: [Input]
 defaultArgs = [ ("src/MapReduce/Master.hs", "master")
+              , ("src/WorkSteal/Queue.hs", "queue")
               , ("src/AsyncP/Master.hs", "master")
               , ("src/PingDet/Master.hs", "master")
               , ("src/PingIter/Master.hs", "master")
