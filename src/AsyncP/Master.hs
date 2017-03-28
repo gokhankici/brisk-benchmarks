@@ -3,6 +3,7 @@
 
 module AsyncP.Master (master) where
 
+import GHC.Base.Brisk
 import Control.Distributed.Process
 import Control.Distributed.BriskStatic
 import Control.Distributed.Process.Closure
