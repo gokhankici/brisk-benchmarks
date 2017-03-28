@@ -29,6 +29,10 @@ library
                      , AsyncP.Master
                      , PingDet.PingServer
                      , PingDet.Master
+                     , PingIter.PingServer
+                     , PingIter.Master
+                     , PingSym.PingServer
+                     , PingSym.Master
                      , MultiPing.PingServer
                      , MultiPing.Master
                      , ConcDB.Utils

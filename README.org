@@ -8,8 +8,8 @@
 | MapReduce | +    | +        | deadlock |
 | MultiPing | +    | +        | deadlock |
 | PingDet   | +    | +        | deadlock |
-| PingIter  |      |          |          |
-| PingSym   |      |          |          |
+| PingIter  | +    | +        | deadlock |
+| PingSym   | +    | +        | +        |
 | PingSym2  |      |          |          |
 | Registry  |      |          |          |
 | WorkSteal |      |          |          |
