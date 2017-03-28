@@ -11,7 +11,10 @@ import Data.Binary
 import Data.Typeable
 import GHC.Generics (Generic)
 
-data Request          = Allocate String | Lookup String deriving (Generic, Typeable)
+data Request = Allocate ProcessId String
+             | Lookup   ProcessId String
+             deriving (Generic, Typeable)
+
 data AllocateResponse = Allocated | Free                deriving (Generic, Typeable)
 data LookupResponse   = Value String                    deriving (Generic, Typeable)
 data SetRequest       = SetValue String                 deriving (Generic, Typeable)

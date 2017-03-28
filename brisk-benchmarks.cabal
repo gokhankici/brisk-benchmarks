@@ -25,12 +25,13 @@ library
                      , MapReduce.Master
                      , MapReduce.Queue
                      , MapReduce.Utils
-
                      , AsyncP.PingServer
                      , AsyncP.Master
-
                      , MultiPing.PingServer
                      , MultiPing.Master
+                     , ConcDB.Utils
+                     , ConcDB.Client
+                     , ConcDB.Database
 
   other-modules:       MapReduce.MapReduce
 
@@ -43,3 +44,4 @@ library
                      , turtle
                      , system-filepath
                      , text
+                     , transformers

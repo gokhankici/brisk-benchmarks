@@ -1,0 +1,22 @@
+* Benchmarks
+
+| Done      | Code | Compiles | Checks   |
+|-----------+------+----------+----------|
+| AsyncP    | +    | +        | deadlock |
+| ConcDB    | +    | +        | not snd  |
+| DistDB    |      |          |          |
+| MapReduce | +    | +        | deadlock |
+| MultiPing | +    | +        | deadlock |
+| PingDet   |      |          |          |
+| PingIter  |      |          |          |
+| PingSym   |      |          |          |
+| PingSym2  |      |          |          |
+| Registry  |      |          |          |
+| WorkSteal |      |          |          |
+
+* Non-parametric benchmarks
+
+| Done     | Name | Compiles | Checks |
+|----------+------+----------+--------|
+| Firewall |      |          |        |
+| Parikh   |      |          |        |
