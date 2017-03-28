@@ -6,6 +6,7 @@ module MapReduce.Utils where
 import GHC.Base.Brisk
 import Control.Distributed.Process
 import Control.Distributed.Process.SymmetricProcess
+import Control.Distributed.Process.Brisk
 
 import Control.Monad (foldM, forM)
 import Data.Binary

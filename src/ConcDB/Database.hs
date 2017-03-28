@@ -17,12 +17,12 @@ remotable [ 'client ]
 database :: [NodeId] -> Process ()
 database nodes = do
   self <- getSelfPid
-  _clientPids <- spawnSymmetric nodes $ $(mkBriskClosure 'client) self
+  clientPids <- spawnSymmetric nodes $ $(mkBriskClosure 'client) self
   loop
   where
     loop = do request <- expect :: Process Request
               case request of
-                Allocate pid _key -> do
+                Allocate pid key -> do
                   allocated <- liftIO $ getChar >>= \c ->
                     if (c == 'a')
                     then return True
@@ -31,10 +31,10 @@ database nodes = do
                   if allocated
                     then send pid Allocated
                     else do send pid Free
-                            _ <- expectFrom pid :: Process SetRequest
+                            expectFrom pid :: Process SetRequest
                             return ()
 
-                Lookup   pid _key -> do
+                Lookup   pid key -> do
                   choice <- liftIO $ getChar >>= \c ->
                     if (c == 'a')
                     then return Allocated

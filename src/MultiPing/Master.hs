@@ -19,6 +19,6 @@ master nodes = do
   self <- getSelfPid
   pingServers <- spawnSymmetric nodes $ $(mkBriskClosure 'pingServer) ()
   forM pingServers (\p -> do send p self
-                             _ <- expect :: Process ProcessId
+                             _ <- expectFrom p :: Process ProcessId
                              return ())
   return ()

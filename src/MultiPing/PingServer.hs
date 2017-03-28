@@ -12,4 +12,5 @@ import Control.Distributed.Process.SymmetricProcess
 pingServer :: () -> Process ()
 pingServer _ = do self <- getSelfPid
                   p <- expect :: Process ProcessId
-                  send p self
+                  selfMsg <- selfSign self
+                  send p selfMsg

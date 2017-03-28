@@ -17,10 +17,10 @@ client db = loop
     loop = do
       me <- getSelfPid
       choice <- liftIO $ getChar >>= \c -> return (c == 'a')
-      if choice
-        then do send db (Allocate me "foo" "bar")
-
-        else do send db (Lookup me "foo")
-                _response <- expect :: Process LookupResponse
-                return ()
+      msg <- if choice then return $ Allocate me "foo" "bar"
+                       else return $ Lookup me "foo"
+      send db msg
+      if choice then return ()
+                else do expect :: Process LookupResponse
+                        return ()
       loop

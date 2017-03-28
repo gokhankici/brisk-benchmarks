@@ -15,9 +15,12 @@ data Request = Allocate ProcessId String
              | Lookup   ProcessId String
              deriving (Generic, Typeable)
 
-data AllocateResponse = Allocated | Free                deriving (Generic, Typeable)
-data LookupResponse   = Value String                    deriving (Generic, Typeable)
-data SetRequest       = SetValue String                 deriving (Generic, Typeable)
+data AllocateResponse = Allocated | Free
+                      deriving (Generic, Typeable)
+data LookupResponse   = Value String
+                      deriving (Generic, Typeable)
+data SetRequest       = SetValue String
+                      deriving (Generic, Typeable)
 
 instance Binary Request
 instance Binary AllocateResponse
