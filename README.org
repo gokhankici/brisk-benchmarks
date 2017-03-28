@@ -10,7 +10,7 @@
 | PingDet   | +    | +        | deadlock |
 | PingIter  | +    | +        | deadlock |
 | PingSym   | +    | +        | +        |
-| PingSym2  |      |          |          |
+| PingSym2  | +    | +        | not snd  |
 | Registry  |      |          |          |
 | WorkSteal |      |          |          |
 
