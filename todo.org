@@ -1,9 +1,9 @@
 * Benchmarks
 
-| Done      | Name | Compiles | Checks |
+| Done      | Code | Compiles | Checks |
 |-----------+------+----------+--------|
-| AsyncP    |      |          |        |
-| ConcDB    |      |          |        |
+| AsyncP    | +    | +        | -      |
+| ConcDB    | ...  |          |        |
 | DistDB    |      |          |        |
 | MapReduce | +    | +        | -      |
 | MultiPing |      |          |        |

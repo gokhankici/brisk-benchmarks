@@ -32,7 +32,8 @@ parser = (,) <$> (many $ (,) <$> bmkParser <*> binderParser)
 
 defaultArgs :: [Input]
 defaultArgs = [ ("src/MapReduce/Master.hs", "master")
-              ,( "src/AsyncP/Master.hs", "master")
+              , ("src/AsyncP/Master.hs", "master")
+              , ("src/MultiPing/Master.hs", "master")
               ]
 
 -- -----------------------------------------------------------------------------
@@ -44,7 +45,7 @@ runBenchmarks args = forM_ args $ \_arg -> runBenchmark _arg >> echo ""
 
 runBenchmark :: Input -> IO ()
 runBenchmark (fn,n) = do
-  info $ fromPath (dirname fn) <++> " - " <++> n
+  info $ fromPath (dirname fn) <++> " - " <++> n <++> " [BRISK]"
   sh $ do
     let outputFile = runsFolder </> dirname fn <.> "run"
     rmf outputFile
@@ -82,14 +83,21 @@ emitProlog fn n = do
 main :: IO ()
 main = do
   (args,emitPl) <- options "Runs brisk benchmarks" parser
-  mkdirp runsFolder
   let args' = case args of
                 [] -> defaultArgs
                 _  -> args
+
+  mkdirp runsFolder
+
   _ <- parallelInterleaved $
     if emitPl
       then [ emitProlog fn n | (fn,n) <- args' ]
       else [ runBenchmark a | a <- args' ]
+
+  case args' of
+    [(fn,_)] -> do let out = runsFolder </> dirname fn <.> if emitPl then "run.pl" else "run"
+                   stdout $ input out
+    _        -> return ()
 
   stopGlobalPool
 

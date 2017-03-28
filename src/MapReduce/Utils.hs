@@ -3,6 +3,7 @@
 
 module MapReduce.Utils where
 
+import GHC.Base.Brisk
 import Control.Distributed.Process
 import Control.Distributed.Process.SymmetricProcess
 

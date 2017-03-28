@@ -29,6 +29,9 @@ library
                      , AsyncP.PingServer
                      , AsyncP.Master
 
+                     , MultiPing.PingServer
+                     , MultiPing.Master
+
   other-modules:       MapReduce.MapReduce
 
   default-language:    Haskell2010
