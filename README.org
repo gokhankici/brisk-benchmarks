@@ -2,12 +2,12 @@
 
 | Done      | Code | Compiles | Checks   |
 |-----------+------+----------+----------|
-| AsyncP    | +    | +        | deadlock |
-| ConcDB    | +    | +        | not snd  |
-| DistDB    | +    | +        | not snd  |
+| AsyncP    | +    | +        | +        |
+| ConcDB    | +    | +        | +        |
+| DistDB    | +    | +        | +        |
 | MapReduce | +    | +        | deadlock |
-| MultiPing | +    | +        | deadlock |
-| PingDet   | +    | +        | deadlock |
+| MultiPing | +    | +        | +        |
+| PingDet   | +    | +        | +        |
 | PingIter  | +    | +        | deadlock |
 | PingSym   | +    | +        | +        |
 | PingSym2  | +    | +        | not snd  |

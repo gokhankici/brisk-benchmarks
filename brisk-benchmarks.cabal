@@ -39,6 +39,7 @@ library
                      , PingSym2.PingServer
                      , PingSym2.Master
                      , PingSym2.Master2
+                     , PingSym2.Utils
                      , MultiPing.PingServer
                      , MultiPing.Master
                      , ConcDB.Utils

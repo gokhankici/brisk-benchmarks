@@ -10,10 +10,10 @@ import Control.Distributed.Process.Closure
 import Control.Distributed.Process.SymmetricProcess
 import Control.Monad (forM, foldM)
 
-master2 :: Int -> Process ()
-master2 n = do
-  self <- getSelfPid
-  foldM (\_ _ -> do
-            _p <- expect :: Process ProcessId
-            return ()) () [1..n]
+import PingSym2.Utils
+
+master2 :: () -> Process ()
+master2 _ = do
+  foldM (\_ _ -> do expect :: Process ProcessId
+                    return ()) () [1..workerSize]
   return ()

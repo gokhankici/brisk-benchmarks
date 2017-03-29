@@ -13,6 +13,6 @@ pingServer :: (ProcessId,ProcessId) -> Process ()
 pingServer (m,m2) = do
   self <- getSelfPid
   send m self
-  _p <- expect :: Process ProcessId
+  expect :: Process ProcessId
   send m2 self
   return ()

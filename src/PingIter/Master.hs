@@ -5,6 +5,7 @@ module PingIter.Master (master) where
 
 import GHC.Base.Brisk
 import Control.Distributed.Process
+import Control.Distributed.Process.Brisk
 import Control.Distributed.BriskStatic
 import Control.Distributed.Process.Closure
 import Control.Distributed.Process.SymmetricProcess
@@ -14,12 +15,19 @@ import PingIter.PingServer
 
 remotable [ 'pingServer ]
 
-master :: [NodeId] -> Process ()
-master nodes = do
+getNodes :: Int -> Process [NodeId]
+getNodes n = do node <- getSelfNode
+                return $ replicate n node
+
+workerSize :: Int
+workerSize  = 10
+
+master :: Process ()
+master = do
+  nodes <- getNodes workerSize
   self <- getSelfPid
   pingServers <- spawnSymmetric nodes $ $(mkBriskClosure 'pingServer) ()
-  let n = length pingServers
   forM pingServers (\p -> send p self)
-  foldM (\_ _ -> do _p <- expect :: Process ProcessId
-                    return ()) () [1..n]
+  foldM (\_ _ -> do expect :: Process ProcessId
+                    return ()) () [1..workerSize]
   return ()
