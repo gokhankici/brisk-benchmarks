@@ -18,5 +18,5 @@ registry n = do (MasterMsg master) <- expect
                 foldM (\_ _ -> do
                           (ClientMsg _c) <- expect
                           return ()) () [1..n]
-                send master ()
+                send master OkMsg
                 return ()

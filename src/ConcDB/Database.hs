@@ -35,9 +35,6 @@ database nodes = do
                             return ()
 
                 Lookup   pid key -> do
-                  choice <- liftIO $ getChar >>= \c ->
-                    if (c == 'a')
-                    then return Allocated
-                    else return Free
-                  send pid choice
+                  let result = Value "bar"
+                  send pid result
               loop

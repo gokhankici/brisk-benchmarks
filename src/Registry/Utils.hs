@@ -15,7 +15,9 @@ import GHC.Generics (Generic)
 data MasterMsg   = MasterMsg   ProcessId deriving (Generic, Typeable)
 data RegistryMsg = RegistryMsg ProcessId deriving (Generic, Typeable)
 data ClientMsg   = ClientMsg   ProcessId deriving (Generic, Typeable)
+data OkMsg       = OkMsg                 deriving (Generic, Typeable)
 
 instance Binary MasterMsg
 instance Binary RegistryMsg
 instance Binary ClientMsg
+instance Binary OkMsg

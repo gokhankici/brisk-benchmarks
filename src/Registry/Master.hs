@@ -19,7 +19,6 @@ remotable [ 'client, 'registry ]
 
 master :: (NodeId,[NodeId]) -> Process ()
 master (node,nodes) = do
-  (MasterMsg master) <- expect
   let n = length nodes
   regPid <- spawn node $ $(mkBriskClosure 'registry) n
   clients <- spawnSymmetric nodes $ $(mkBriskClosure 'client) ()
@@ -28,5 +27,5 @@ master (node,nodes) = do
   send regPid (MasterMsg self)
   forM clients (\c -> send c (RegistryMsg regPid))
 
-  () <- expect
+  OkMsg <- expect
   return ()
