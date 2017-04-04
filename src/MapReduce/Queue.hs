@@ -15,8 +15,8 @@ import MapReduce.Mapper
 
 remotable [ 'mapper ]
 
-queue :: ([NodeId], ProcessId) -> Process ()
-queue (nodes, master) =
+queue :: ([NodeId], [Int], ProcessId) -> Process ()
+queue (nodes, work, m) =
   do self <- getSelfPid
 
      -- -- get the workset
@@ -26,13 +26,13 @@ queue (nodes, master) =
      mapperPids <- spawnSymmetric nodes $ $(mkBriskClosure 'mapper) self
 
      -- for k times ...
-     foldM go () [1::Int .. workCount]
+     foldM go () work
   
      -- for each mapper ...
-     forM mapperPids (\x -> do (Request pid) <- expectFrom x :: Process Request
-                               send x Term)
+     forM mapperPids (\x -> do (Request pid) <- expect
+                               send pid Term)
 
      return ()
   where
     go _ i = do (Request mapperId) <- expect :: Process Request
-                send mapperId (Work master i)
+                send mapperId (Work m i)

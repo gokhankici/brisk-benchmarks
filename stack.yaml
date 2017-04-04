@@ -4,14 +4,14 @@ packages:
 - '.'
 - '../brisk'
 - '../brisk-prelude'
-# - location:
-#     git:    https://github.com/abakst/Brisk
-#     commit: e32d0694a643842d111f148bb2f8dae555e9fc15
-#   extra-dep: true
-# - location:
-#     git:    https://github.com/abakst/brisk-prelude
-#     commit: 8384991a88bd8f87f4002c88082f916c6dff3cfb
-#   extra-dep: true
+## - location:
+##     git:    https://github.com/abakst/Brisk
+##     commit: f7d11a59646de7f558c069d2e93f32af65d3f22c
+##   extra-dep: true
+##- location:
+##    git:    https://github.com/abakst/brisk-prelude
+##    commit: 3bc935437990521f85a32fd7fb6af9f6fa446d2d
+##  extra-dep: true
 
 extra-deps:
 - distributed-process-0.6.6

@@ -4,15 +4,17 @@
 module PingSym2.PingServer (pingServer) where
 
 import GHC.Base.Brisk
+import PingSym2.Utils
 import Control.Distributed.Process
 import Control.Distributed.BriskStatic
 import Control.Distributed.Process.Closure
 import Control.Distributed.Process.SymmetricProcess
 
-pingServer :: (ProcessId,ProcessId) -> Process ()
-pingServer (m,m2) = do
+pingServer :: ProcessId -> Process ()
+pingServer m = do
   self <- getSelfPid
-  send m self
+  I m2 <- expect
+  send m $ M1 self
   expect :: Process ProcessId
-  send m2 self
+  send m2 $ M2 self
   return ()

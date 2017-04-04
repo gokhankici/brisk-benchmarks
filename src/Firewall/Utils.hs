@@ -14,8 +14,13 @@ import GHC.Generics (Generic)
 data Request = GoodRequest ProcessId
              | BadRequest  ProcessId
              deriving (Generic, Typeable)
+data FwdRequest = Fwd Request
+             deriving (Generic, Typeable)
 
-data Response = Response deriving (Generic, Typeable)
+data Response = Response SrvResponse deriving (Generic, Typeable)
+data SrvResponse = SrvResponse deriving (Generic, Typeable)
 
 instance Binary Request
 instance Binary Response
+instance Binary FwdRequest
+instance Binary SrvResponse

@@ -15,17 +15,16 @@ import MapReduce.Queue
 
 remotable [ 'queue ]
 
-master :: (NodeId, [NodeId]) -> Process ()
-master (node, nodes) =
+master :: [Int] -> (NodeId, [NodeId]) -> Process ()
+master work (node, nodes) =
   do self <- getSelfPid
-     queuePid <- spawn node $ $(mkBriskClosure 'queue) (nodes, self)
+     queuePid <- spawn node $ $(mkBriskClosure 'queue) (nodes, work, self)
 
      -- -- Send the work list
      -- send queuePid (WorkSet [1..workCount])
 
      -- for k times ...
-
-     foldM go () [1::Int .. workCount]
+     foldM go () work
   where
     go _ i = do (Result n) <- expect :: Process Result
                 return ()

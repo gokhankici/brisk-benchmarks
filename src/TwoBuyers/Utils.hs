@@ -29,7 +29,7 @@ data Offer = OK   ProcessId
 data OfferDetails = OfferDetails ProcessId String
                   deriving (Generic, Typeable)
 
-data ShippingDate = ShippingDate Int Int Int
+data ShippingDate = SD Int Int Int
                   deriving (Generic, Typeable)
 
 instance Binary Title

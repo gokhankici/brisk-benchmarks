@@ -19,7 +19,7 @@ remotable [ 'buyer1, 'buyer2, 'seller ]
 
 master :: NodeId -> Process ()
 master node = do
-  _self <- getSelfPid
+  self <- getSelfPid
   sellerPid <- spawn node $ $(mkBriskClosure 'seller) ()
   buyer2Pid <- spawn node $ $(mkBriskClosure 'buyer2) ()
   buyer1Pid <- spawn node $ $(mkBriskClosure 'buyer1) (sellerPid, buyer2Pid)

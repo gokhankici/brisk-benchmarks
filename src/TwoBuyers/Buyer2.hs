@@ -23,7 +23,7 @@ buyer2 _ = do
   if b
     then do send sellerPid (OK self)
             send sellerPid (OfferDetails self "bar")
-            (ShippingDate _ _ _) <- expect
+            (SD _ _ _) <- expect
             return ()
     else send sellerPid (Quit self)
 
