@@ -58,6 +58,10 @@ library
                      , Firewall.Client
                      , Firewall.Server
                      , Firewall.Firewall
+                     , Parikh.Client
+                     , Parikh.Server
+                     , Parikh.Master
+                     , Parikh.Utils
                      
   other-modules:       MapReduce.MapReduce
 

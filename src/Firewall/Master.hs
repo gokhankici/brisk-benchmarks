@@ -16,9 +16,9 @@ import Firewall.Firewall
 
 remotable [ 'client, 'firewall, 'server ]
 
-master :: NodeId -> Process ()
-master node = do
+master :: NodeId -> [NodeId] -> Process ()
+master node nodes = do
   serverPid   <- spawn node $ $(mkBriskClosure 'server) ()
   firewallPid <- spawn node $ $(mkBriskClosure 'firewall) serverPid
-  clientPid   <- spawn node $ $(mkBriskClosure 'client) firewallPid
+  clientPid   <- spawnSymmetric nodes $ $(mkBriskClosure 'client) firewallPid
   return ()

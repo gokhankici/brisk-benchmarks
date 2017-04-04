@@ -13,10 +13,10 @@
 | PingSym2  | +    | +        | not snd  |
 | Registry  | +    | +        | deadlock |
 | WorkSteal | +    | +        | deadlock |
+| Firewall  | +    | +        | deadlock |
 
 * Non-parametric benchmarks
 
-| Name     | Code | Compiles | Checks   |
-|----------+------+----------+----------|
-| Firewall | +    | +        | segfault |
-| Parikh   |      |          |          |
+| Name   | Code | Compiles | Checks |
+|--------+------+----------+--------|
+| Parikh | +    | +        | +      |
