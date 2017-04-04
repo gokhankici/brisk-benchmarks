@@ -67,6 +67,10 @@ library
                      , TwoBuyers.Buyer2
                      , TwoBuyers.Seller
                      , TwoBuyers.Master
+                     , Auction.Utils
+                     , Auction.Master
+                     , Auction.Buyer
+                     , Auction.Seller
                      
   other-modules:       MapReduce.MapReduce
 

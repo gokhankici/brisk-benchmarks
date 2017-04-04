@@ -14,11 +14,12 @@
 | Registry  | +    | +        | deadlock |
 | WorkSteal | +    | +        | deadlock |
 | Firewall  | +    | +        | deadlock |
+| Auction   | +    | ?        |          |
 
 * Non-parametric benchmarks
 
 | Name      | Code | Compiles | Checks |
 |-----------+------+----------+--------|
 | Parikh    | +    | +        | +      |
-| TwoBuyers | +    | error    |        |
+| TwoBuyers | +    | ?        |        |
 
