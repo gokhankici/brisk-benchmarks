@@ -1,6 +1,6 @@
 * Benchmarks
 
-| Done      | Code | Compiles | Checks   |
+| Name      | Code | Compiles | Checks   |
 |-----------+------+----------+----------|
 | AsyncP    | +    | +        | +        |
 | ConcDB    | +    | +        | +        |
@@ -16,7 +16,7 @@
 
 * Non-parametric benchmarks
 
-| Done     | Name | Compiles | Checks |
-|----------+------+----------+--------|
-| Firewall |      |          |        |
-| Parikh   |      |          |        |
+| Name     | Code | Compiles | Checks   |
+|----------+------+----------+----------|
+| Firewall | +    | +        | segfault |
+| Parikh   |      |          |          |

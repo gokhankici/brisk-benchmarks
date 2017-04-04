@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-import Prelude hiding (FilePath)
-import Turtle
+import           Prelude hiding (FilePath)
+import           Turtle
 import qualified Data.Text as T (pack, unpack, append, replace, dropWhileEnd)
-import Filesystem.Path.CurrentOS (encodeString)
-import System.Console.ANSI
-import Control.Concurrent.ParallelIO.Global
+import           Filesystem.Path.CurrentOS (encodeString)
+import           System.Console.ANSI
+import           Control.Concurrent.ParallelIO.Global
 import           Control.Concurrent.Lock         ( Lock )
 import qualified Control.Concurrent.Lock as Lock ( new, with )
 -- -----------------------------------------------------------------------------
@@ -39,6 +39,7 @@ defaultArgs = [ ("src/MapReduce/Master.hs", "master")
               , ("src/ConcDB/Database.hs", "database")
               , ("src/DistDB/Database.hs", "database")
               , ("src/Registry/Master.hs", "master")
+              , ("src/Firewall/Master.hs", "master")
               ]
 
 -- -----------------------------------------------------------------------------

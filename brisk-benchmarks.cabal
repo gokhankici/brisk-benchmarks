@@ -54,6 +54,10 @@ library
                      , Registry.Client
                      , Registry.Registry
                      , Registry.Master
+                     , Firewall.Utils
+                     , Firewall.Client
+                     , Firewall.Server
+                     , Firewall.Firewall
                      
   other-modules:       MapReduce.MapReduce
 
