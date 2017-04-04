@@ -3,18 +3,18 @@
 | Name      | Code | Compiles | Checks   |
 |-----------+------+----------+----------|
 | AsyncP    | +    | +        | +        |
+| Auction   | +    | ?        |          |
 | ConcDB    | +    | +        | +        |
 | DistDB    | +    | +        | +        |
 | MapReduce | +    | +        | deadlock |
 | MultiPing | +    | +        | +        |
 | PingDet   | +    | +        | +        |
-| PingIter  | +    | +        | deadlock |
+| PingIter  | +    | +        | +        |
 | PingSym   | +    | +        | +        |
-| PingSym2  | +    | +        | not snd  |
-| Registry  | +    | +        | deadlock |
-| WorkSteal | +    | +        | deadlock |
-| Firewall  | +    | +        | deadlock |
-| Auction   | +    | ?        |          |
+| PingSym2  | +    | +        | +        |
+| Registry  | +    | +        | +        |
+| WorkSteal | +    | +        | +        |
+| Firewall  | +    | +        | +        |
 
 * Non-parametric benchmarks
 

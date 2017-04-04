@@ -23,4 +23,5 @@ firewall server = loop
           send server (Fwd (GoodRequest me))
           SrvResponse <- expect
           send p (Response SrvResponse)
+        _ -> return ()
       loop

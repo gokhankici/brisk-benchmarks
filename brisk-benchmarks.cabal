@@ -9,7 +9,7 @@ cabal-version:       >=1.10
 executable brisk-benchmarks
   hs-source-dirs:      src
   main-is:             Main.hs
-  ghc-options:         -O2 -threaded -Wall -with-rtsopts=-N3
+  ghc-options:         -O2 -threaded -Wall -with-rtsopts=-N2
   build-depends:       base >= 4.7 && < 5
                      , turtle
                      , system-filepath
@@ -58,6 +58,7 @@ library
                      , Firewall.Client
                      , Firewall.Server
                      , Firewall.Firewall
+                     , Firewall.Master
                      , Parikh.Client
                      , Parikh.Server
                      , Parikh.Master
