@@ -42,6 +42,7 @@ defaultArgs = [ ("src/MapReduce/Master.hs", "master")
               , ("src/Firewall/Master.hs", "master")
               , ("src/Parikh/Master.hs", "master")
               , ("src/TwoBuyers/Master.hs", "master")
+              , ("src/Auction/Master.hs", "master")
               ]
 
 -- -----------------------------------------------------------------------------
@@ -58,7 +59,8 @@ runBenchmark lock (fn,n) = do
                             ] empty 
   
   case rc of
-    ExitSuccess   -> success $ "[SUCCESS] " <++> fromPath (dirname fn) <++> " - " <++> n
+    ExitSuccess   -> Lock.with lock $
+                     success $ "[SUCCESS] " <++> fromPath (dirname fn) <++> " - " <++> n
     ExitFailure _ -> Lock.with lock $ do
       failure $ "[ERROR]   " <++> fromPath (dirname fn) <++> " - " <++> n
       normal $ T.dropWhileEnd (== '\n') $ T.replace "\x1b[1;31m" "" out
