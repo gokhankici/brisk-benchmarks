@@ -9,6 +9,7 @@ import Control.Distributed.BriskStatic
 import Control.Distributed.Process.Closure
 import Control.Distributed.Process.SymmetricProcess
 import Control.Monad (forM)
+import Data.Char
 
 import TwoBuyers.Utils
 
@@ -20,9 +21,9 @@ seller _ = do
   send buyer2 (Quote self 100)
 
   msg <- expect
-
   case msg of
-    OK pid -> do (OfferDetails _pid _str) <- expect
-                 send pid (ShippingDate 1 1 1990)
+    OK floop -> do (OfferDetails _ _) <- expect
+                   send floop (SD 1 1 90)
+                   return ()
     Quit _ -> return ()
       
