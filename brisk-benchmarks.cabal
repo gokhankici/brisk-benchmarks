@@ -58,6 +58,15 @@ library
                      , Firewall.Client
                      , Firewall.Server
                      , Firewall.Firewall
+                     , Parikh.Client
+                     , Parikh.Server
+                     , Parikh.Master
+                     , Parikh.Utils
+                     , TwoBuyers.Utils
+                     , TwoBuyers.Buyer1
+                     , TwoBuyers.Buyer2
+                     , TwoBuyers.Seller
+                     , TwoBuyers.Master
                      
   other-modules:       MapReduce.MapReduce
 
