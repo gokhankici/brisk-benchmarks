@@ -13,8 +13,11 @@ import Control.Monad (forM)
 import Firewall.Utils
 
 firewall :: ProcessId -> Process ()
-firewall server = do
-  msg <- expect
-  case msg of
-    GoodRequest _ -> send server msg
-    BadRequest _  -> return ()
+firewall server = loop
+  where
+    loop = do
+      msg <- expect
+      case msg of
+        GoodRequest _ -> send server msg
+        BadRequest _  -> return ()
+      loop

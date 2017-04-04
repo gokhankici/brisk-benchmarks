@@ -13,10 +13,10 @@ import qualified Control.Concurrent.Lock as Lock ( new, with )
 -- -----------------------------------------------------------------------------
 
 bmkParser :: Parser FilePath
-bmkParser = optPath "benchmark" 'b' "Name of the benchmark file"
+bmkParser = optPath "file" 'f' "Name of the benchmark file"
 
 binderParser :: Parser Text
-binderParser = optText "binder" 'n' "Name of the binder"
+binderParser = optText "binder" 'b' "Name of the binder"
 
 plParser :: Parser Bool
 plParser = switch  "prolog" 'p' "Emit prolog"
