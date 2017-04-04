@@ -41,6 +41,7 @@ defaultArgs = [ ("src/MapReduce/Master.hs", "master")
               , ("src/Registry/Master.hs", "master")
               , ("src/Firewall/Master.hs", "master")
               , ("src/Parikh/Master.hs", "master")
+              , ("src/TwoBuyers/Master.hs", "master")
               ]
 
 -- -----------------------------------------------------------------------------

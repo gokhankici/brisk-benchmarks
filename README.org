@@ -17,6 +17,8 @@
 
 * Non-parametric benchmarks
 
-| Name   | Code | Compiles | Checks |
-|--------+------+----------+--------|
-| Parikh | +    | +        | +      |
+| Name      | Code | Compiles | Checks |
+|-----------+------+----------+--------|
+| Parikh    | +    | +        | +      |
+| TwoBuyers | +    | error    |        |
+
