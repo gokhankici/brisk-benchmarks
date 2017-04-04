@@ -16,6 +16,7 @@ executable brisk-benchmarks
                      , text
                      , ansi-terminal
                      , parallel-io
+                     , concurrent-extra
 
 library
   hs-source-dirs:      src

@@ -2,18 +2,15 @@
 
 import Prelude hiding (FilePath)
 import Turtle
-import qualified Data.Text as T (pack, unpack, append)
+import qualified Data.Text as T (pack, unpack, append, replace, dropWhileEnd)
 import Filesystem.Path.CurrentOS (encodeString)
-import Control.Monad
 import System.Console.ANSI
 import Control.Concurrent.ParallelIO.Global
-
+import           Control.Concurrent.Lock         ( Lock )
+import qualified Control.Concurrent.Lock as Lock ( new, with )
 -- -----------------------------------------------------------------------------
 -- ARGUMENTS
 -- -----------------------------------------------------------------------------
-
-runsFolder :: FilePath
-runsFolder = "runs"
 
 bmkParser :: Parser FilePath
 bmkParser = optPath "benchmark" 'b' "Name of the benchmark file"
@@ -48,40 +45,39 @@ defaultArgs = [ ("src/MapReduce/Master.hs", "master")
 -- TESTING
 -- -----------------------------------------------------------------------------
 
-runBenchmarks :: [Input] -> IO ()
-runBenchmarks args = forM_ args $ \_arg -> runBenchmark _arg >> echo ""
-
-runBenchmark :: Input -> IO ()
-runBenchmark (fn,n) = do
-  info $ fromPath (dirname fn) <++> " - " <++> n <++> " [BRISK]"
-  sh $ do
-    let outputFile = runsFolder </> dirname fn <.> "run"
-    rmf outputFile
-    append outputFile $ mergeOutputs $
-      inprocWithErr "stack" [ "exec", "--"
+runBenchmark :: Lock -> Input -> IO ()
+runBenchmark lock (fn,n) = do
+  (rc, out, _) <- procStrictWithErr
+                    "stack" [ "exec", "--"
                             , "brisk"
                             , "--file", fromPath fn
                             , "--binder", n
                             ] empty 
   
-  success $ fromPath (dirname fn) <++> " - " <++> n <++> " (DONE)"
+  case rc of
+    ExitSuccess   -> success $ "[SUCCESS] " <++> fromPath (dirname fn) <++> " - " <++> n
+    ExitFailure _ -> Lock.with lock $ do
+      failure $ "[ERROR]   " <++> fromPath (dirname fn) <++> " - " <++> n
+      normal $ T.dropWhileEnd (== '\n') $ T.replace "\x1b[1;31m" "" out
   return ()
 
-emitProlog :: FilePath -> Text -> IO ()
-emitProlog fn n = do
-  info $ fromPath (dirname fn) <++> " - " <++> n <++> " [PROLOG]"
-  sh $ do
-    let outputFile = runsFolder </> dirname fn <.> "run.pl"
-    rmf outputFile
-    append outputFile $ mergeOutputs $
-      inprocWithErr "stack" [ "ghc", "--"
+emitProlog :: Lock -> FilePath -> Text -> IO ()
+emitProlog lock fn n = do
+  (rc, out, _) <- procStrictWithErr
+                    "stack" [ "ghc", "--"
                             , "-fforce-recomp"
                             , "--make", "-i./src"
                             , "-fplugin", "Brisk.Plugin"
                             , "-fplugin-opt", "Brisk.Plugin:" <++> n
                             , fromPath fn
                             ] empty
-  success $ fromPath (dirname fn) <++> " - " <++> n <++> " (DONE)"
+  case rc of
+    ExitSuccess   -> Lock.with lock $ do
+      info $ "[PROLOG] " <++> fromPath (dirname fn) <++> " - " <++> n
+      normal out
+    ExitFailure _ -> Lock.with lock $ do
+      failure $ "[ERROR]  " <++> fromPath (dirname fn) <++> " - " <++> n
+      normal out
   return ()
 
 -- -----------------------------------------------------------------------------
@@ -94,18 +90,11 @@ main = do
   let args' = case args of
                 [] -> defaultArgs
                 _  -> args
-
-  mkdirp runsFolder
-
+  stdoutLock <- Lock.new
   _ <- parallelInterleaved $
     if emitPl
-      then [ emitProlog fn n | (fn,n) <- args' ]
-      else [ runBenchmark a | a <- args' ]
-
-  case args' of
-    [(fn,_)] -> do let out = runsFolder </> dirname fn <.> if emitPl then "run.pl" else "run"
-                   stdout $ input out
-    _        -> return ()
+      then [ emitProlog stdoutLock fn n | (fn,n) <- args' ]
+      else [ runBenchmark stdoutLock a | a <- args' ]
 
   stopGlobalPool
 
@@ -119,7 +108,8 @@ main = do
 fromPath :: FilePath -> Text
 fromPath = T.pack . encodeString
 
-info, success, failure :: Text -> IO ()
+normal, info, success, failure :: Text -> IO ()
+normal  = putStrLn . T.unpack
 info    = colored Blue
 success = colored Green
 failure = colored Red
