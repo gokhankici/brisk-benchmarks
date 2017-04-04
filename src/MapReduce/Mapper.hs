@@ -11,8 +11,8 @@ import Control.Distributed.Process.SymmetricProcess
 
 import MapReduce.Utils  
 
-mapper :: ProcessId -> Process ()
-mapper queue = loop
+mapper :: (ProcessId, ProcessId) -> Process ()
+mapper (queue, master) = loop
   where loop = 
           do self <- getSelfPid
              -- request a work from the work queue
@@ -22,8 +22,8 @@ mapper queue = loop
              case req of
                -- if got a work, send the processed
                -- result to the master process
-               Work master i -> do send master (Result i)
-                                   loop
+               Work i -> do send master (Result i)
+                            loop
                -- otherwise, there must be no more work
                -- mapper is shutdown
                Term   -> return ()

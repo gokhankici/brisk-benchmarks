@@ -23,7 +23,7 @@ queue (nodes, work, m) =
      -- WorkSet ns <- expect
 
      -- create the workers
-     mapperPids <- spawnSymmetric nodes $ $(mkBriskClosure 'mapper) self
+     mapperPids <- spawnSymmetric nodes $ $(mkBriskClosure 'mapper) (self, m)
 
      -- for k times ...
      foldM go () work
@@ -35,4 +35,4 @@ queue (nodes, work, m) =
      return ()
   where
     go _ i = do (Request mapperId) <- expect :: Process Request
-                send mapperId (Work m i)
+                send mapperId (Work i)
