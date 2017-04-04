@@ -16,13 +16,13 @@ seller :: () -> Process ()
 seller _ = do
   self <- getSelfPid
   (Title buyer1 buyer2 _) <- expect
-  send buyer1 (Quote self 100)
-  send buyer2 (Quote self 100)
+  send buyer1 (Quote self 2)
+  send buyer2 (Quote self 2)
 
   msg <- expect
 
   case msg of
     OK pid -> do (OfferDetails _pid _str) <- expect
-                 send pid (ShippingDate 1 1 1990)
+                 send pid (ShippingDate 1 1 1)
     Quit _ -> return ()
       
