@@ -20,3 +20,12 @@ getNodes :: Int -> Process [NodeId]
 getNodes n = do node <- getSelfNode
                 return $ replicate n node
 
+data Master1Msg = M1 ProcessId
+                  deriving (Generic, Typeable)
+data Master2Msg = M2 ProcessId
+                  deriving (Generic, Typeable)
+data Init = I ProcessId
+                  deriving (Generic, Typeable)
+instance Binary Master1Msg
+instance Binary Master2Msg
+instance Binary Init

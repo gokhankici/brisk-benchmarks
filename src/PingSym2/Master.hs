@@ -18,16 +18,18 @@ remotable [ 'pingServer, 'master2 ]
 
 master :: NodeId -> [NodeId] -> Process ()
 master node nodes = do
-  self <- getSelfPid
-  m2 <- spawn node $ $(mkBriskClosure 'master2) ()
-  pingServers <- spawnSymmetric nodes $ $(mkBriskClosure 'pingServer) (self,m2)
-  forM pingServers (\_ -> do p <- expect :: Process ProcessId
+  self        <- getSelfPid
+  pingServers <- spawnSymmetric nodes $ $(mkBriskClosure 'pingServer) self
+  m2          <- spawn node $ $(mkBriskClosure 'master2) nodes
+  -- Bug: had accidentally put initialization at the end
+  forM pingServers (\p -> send p (I m2))
+  forM pingServers (\_ -> do M1 p <- expect :: Process Master1Msg 
                              send p self)
   return ()
 
 main :: Process ()
 main = do
-  node <- getSelfNode
+  node  <- getSelfNode
   nodes <- getNodes workerSize
   master node nodes
   

@@ -23,9 +23,6 @@ instance Binary Request
 instance Binary Work
 instance Binary Result
 
-workCount :: Int
-workCount =  15
-
 mapperCount :: Int
 mapperCount =  10
 

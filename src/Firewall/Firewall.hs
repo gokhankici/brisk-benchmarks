@@ -16,8 +16,11 @@ firewall :: ProcessId -> Process ()
 firewall server = loop
   where
     loop = do
-      msg <- expect
+      me  <- getSelfPid
+      msg <- expect :: Process Request
       case msg of
-        GoodRequest _ -> send server msg
-        BadRequest _  -> return ()
+        GoodRequest p -> do
+          send server (Fwd (GoodRequest me))
+          SrvResponse <- expect
+          send p (Response SrvResponse)
       loop

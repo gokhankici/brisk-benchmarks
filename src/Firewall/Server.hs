@@ -17,6 +17,6 @@ server _ = loop
   where
     loop = do msg <- expect
               case msg of
-                GoodRequest p -> do send p Response
-                                    loop
-                BadRequest _ -> return ()
+                Fwd (GoodRequest p) -> send p SrvResponse
+                Fwd (BadRequest _)  -> fail "BadRequest"
+              loop

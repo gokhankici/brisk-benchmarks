@@ -12,8 +12,8 @@ import Control.Monad (forM, foldM)
 
 import PingSym2.Utils
 
-master2 :: () -> Process ()
-master2 _ = do
-  foldM (\_ _ -> do expect :: Process ProcessId
-                    return ()) () [1..workerSize]
+master2 :: [NodeId] -> Process ()
+master2 ns = do
+  foldM (\_ _ -> do expect :: Process Master2Msg
+                    return ()) () ns
   return ()

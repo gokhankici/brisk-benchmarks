@@ -21,8 +21,7 @@ mapper queue = loop
              work <- expect :: Process Work
              case work of
                -- if got a work, send the processed result
-               Work i -> do send queue (Result i)
-                            loop
+               Work i -> loop
                -- otherwise, there must be no more work
                -- shutdown mapper
                Term   -> return ()

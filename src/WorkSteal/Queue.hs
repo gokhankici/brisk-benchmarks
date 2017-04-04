@@ -17,7 +17,7 @@ remotable [ 'mapper ]
 
 queue :: [NodeId] -> Process ()
 queue nodes =
-  do self <- getSelfPid
+  do self       <- getSelfPid
      mapperPids <- spawnSymmetric nodes $ $(mkBriskClosure 'mapper) self
      foldM go () [1::Int .. workCount]
      forM mapperPids (\_ -> do (Request pid) <- expect :: Process Request

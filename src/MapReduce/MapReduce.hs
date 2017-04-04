@@ -15,8 +15,8 @@ import MapReduce.Master
 
 remotable [ 'master ]
 
-main :: Process ()
-main = do node  <- getSelfNode
-          nodes <- getNodes mapperCount
-          master (node, nodes)
-          return ()
+main :: [Int] -> Process ()
+main work = do node  <- getSelfNode
+               nodes <- getNodes mapperCount
+               master work (node, nodes)
+               return ()

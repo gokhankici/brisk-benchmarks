@@ -16,5 +16,5 @@ client :: ProcessId -> Process ()
 client server = do
   self <- getSelfPid
   send server (GoodRequest self)
-  Response <- expect
+  Response s <- expect
   return ()

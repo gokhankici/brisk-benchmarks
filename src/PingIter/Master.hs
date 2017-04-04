@@ -29,5 +29,5 @@ master = do
   pingServers <- spawnSymmetric nodes $ $(mkBriskClosure 'pingServer) ()
   forM pingServers (\p -> send p self)
   foldM (\_ _ -> do expect :: Process ProcessId
-                    return ()) () [1..workerSize]
+                    return ()) () nodes
   return ()
