@@ -72,6 +72,10 @@ library
                      -- , Auction.Master
                      -- , Auction.Buyer
                      -- , Auction.Seller
+                     , ResShare.Utils
+                     , ResShare.Client
+                     , ResShare.Server
+                     , ResShare.Master
                      
   other-modules:       MapReduce.MapReduce
 
