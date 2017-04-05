@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module ResShare.Utils where
+module LockServer.Utils where
 
 import GHC.Base.Brisk
 import Control.Distributed.Process
@@ -13,7 +13,7 @@ import Data.Binary
 import Data.Typeable
 import GHC.Generics (Generic)
 
-data Lock   = Lock   deriving (Generic, Typeable)
+data Lock   = Lock ProcessId  deriving (Generic, Typeable)
 data Ack    = Ack    deriving (Generic, Typeable)
 data Unlock = Unlock deriving (Generic, Typeable)
 

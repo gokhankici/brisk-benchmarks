@@ -1,20 +1,21 @@
 * Benchmarks
 
-| Name      | Code | Compiles | Checks |
-|-----------+------+----------+--------|
-| AsyncP    | +    | +        | +      |
-| Auction   | +    | ?        |        |
-| ConcDB    | +    | +        | +      |
-| DistDB    | +    | +        | +      |
-| MapReduce | +    | +        | +      |
-| MultiPing | +    | +        | +      |
-| PingDet   | +    | +        | +      |
-| PingIter  | +    | +        | +      |
-| PingSym   | +    | +        | +      |
-| PingSym2  | +    | +        | +      |
-| Registry  | +    | +        | +      |
-| WorkSteal | +    | +        | +      |
-| Firewall  | +    | +        | +      |
+| Name       | Code | Compiles | Checks |
+|------------+------+----------+--------|
+| AsyncP     | +    | +        | +      |
+| Auction    | +    | ?        |        |
+| ConcDB     | +    | +        | +      |
+| DistDB     | +    | +        | +      |
+| Firewall   | +    | +        | +      |
+| LockServer | +    | +        | +      |
+| MapReduce  | +    | +        | +      |
+| MultiPing  | +    | +        | +      |
+| PingDet    | +    | +        | +      |
+| PingIter   | +    | +        | +      |
+| PingSym    | +    | +        | +      |
+| PingSym2   | +    | +        | +      |
+| Registry   | +    | +        | +      |
+| WorkSteal  | +    | +        | +      |
 
 * Non-parametric benchmarks
 
