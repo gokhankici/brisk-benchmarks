@@ -1,25 +1,26 @@
 * Benchmarks
 
-| Name      | Code | Compiles | Checks   |
-|-----------+------+----------+----------|
-| AsyncP    | +    | +        | +        |
-| ConcDB    | +    | +        | +        |
-| DistDB    | +    | +        | +        |
-| MapReduce | +    | +        | deadlock |
-| MultiPing | +    | +        | +        |
-| PingDet   | +    | +        | +        |
-| PingIter  | +    | +        | deadlock |
-| PingSym   | +    | +        | +        |
-| PingSym2  | +    | +        | not snd  |
-| Registry  | +    | +        | deadlock |
-| WorkSteal | +    | +        | deadlock |
-| Firewall  | +    | +        | deadlock |
-| Auction   | +    | ?        |          |
+| Name       | Code | Compiles | Checks |
+|------------+------+----------+--------|
+| AsyncP     | +    | +        | +      |
+| Auction    | +    | ?        |        |
+| ConcDB     | +    | +        | +      |
+| DistDB     | +    | +        | +      |
+| Firewall   | +    | +        | +      |
+| LockServer | +    | +        | +      |
+| MapReduce  | +    | +        | +      |
+| MultiPing  | +    | +        | +      |
+| PingDet    | +    | +        | +      |
+| PingIter   | +    | +        | +      |
+| PingSym    | +    | +        | +      |
+| PingSym2   | +    | +        | +      |
+| Registry   | +    | +        | +      |
+| WorkSteal  | +    | +        | +      |
 
 * Non-parametric benchmarks
 
 | Name      | Code | Compiles | Checks |
 |-----------+------+----------+--------|
 | Parikh    | +    | +        | +      |
-| TwoBuyers | +    | ?        |        |
+| TwoBuyers | +    | +        | +      |
 

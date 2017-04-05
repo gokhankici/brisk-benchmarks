@@ -13,10 +13,10 @@ import Data.Binary
 import Data.Typeable
 import GHC.Generics (Generic)
 
-data WorkSet = WorkSet [Int]             deriving (Generic, Typeable)
-data Request = Request ProcessId         deriving (Generic, Typeable)
-data Work    = Work ProcessId Int | Term deriving (Generic, Typeable)
-data Result  = Result Int                deriving (Generic, Typeable)
+data WorkSet = WorkSet [Int]     deriving (Generic, Typeable)
+data Request = Request ProcessId deriving (Generic, Typeable)
+data Work    = Work Int | Term   deriving (Generic, Typeable)
+data Result  = Result Int        deriving (Generic, Typeable)
 
 instance Binary WorkSet
 instance Binary Request
