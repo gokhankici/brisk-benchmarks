@@ -43,6 +43,7 @@ defaultArgs = [ ("src/MapReduce/Master.hs", "master")
               , ("src/Parikh/Master.hs", "master")
               , ("src/TwoBuyers/Master.hs", "master")
               , ("src/Auction/Master.hs", "master")
+              , ("src/TwoPhaseCommit/TwoPhaseCommit.hs", "main")
               ]
 
 -- -----------------------------------------------------------------------------
