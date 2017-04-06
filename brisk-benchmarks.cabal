@@ -17,6 +17,7 @@ executable brisk-benchmarks
                      , ansi-terminal
                      , parallel-io
                      , concurrent-extra
+                     , foldl
 
 library
   hs-source-dirs:      src
