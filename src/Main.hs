@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 import           Prelude hiding (FilePath)
@@ -8,6 +9,9 @@ import           System.Console.ANSI
 import           Control.Concurrent.ParallelIO.Global
 import           Control.Concurrent.Lock         ( Lock )
 import qualified Control.Concurrent.Lock as Lock ( new, with )
+import           Control.Monad
+import qualified Control.Foldl as L
+import qualified Text.Printf as P
 -- -----------------------------------------------------------------------------
 -- ARGUMENTS
 -- -----------------------------------------------------------------------------
@@ -21,11 +25,16 @@ binderParser = optText "binder" 'b' "Name of the binder"
 plParser :: Parser Bool
 plParser = switch  "prolog" 'p' "Emit prolog"
 
+tableParser :: Parser Bool
+tableParser = switch  "table" 't' "Print latex table"
+
 type Input = (FilePath, Text)
 
-parser :: Parser ([Input], Bool)
-parser = (,) <$> (many $ (,) <$> bmkParser <*> binderParser)
-             <*> plParser
+parser :: Parser ([Input], Bool, Bool)
+parser = (,,) <$> (many $ (,) <$> bmkParser <*> binderParser)
+              <*> plParser
+              <*> tableParser
+         
 
 defaultArgs :: [Input]
 defaultArgs = [ ("src/MapReduce/Master.hs", "master")
@@ -45,6 +54,24 @@ defaultArgs = [ ("src/MapReduce/Master.hs", "master")
               , ("src/TwoPhaseCommit/TwoPhaseCommit.hs", "main")
               -- , ("src/Auction/Master.hs", "master")
               , ("src/LockServer/Master.hs", "master")
+              ]
+
+nameMapping = [ ("MultiPing", "\\MultiPing")
+              , ("AsyncP", "\\AsyncPing")
+              , ("ConcDB", "\\concdb")
+              , ("DistDB", "\\distdb")
+              , ("Firewall", "\\firewall")
+              , ("LockServer", "\\lockserver")
+              , ("MapReduce", "\\mapreduce")
+              , ("Parikh", "\\parikh")
+              , ("PingDet", "\\PingDet")
+              , ("PingIter", "\\PingIter")
+              , ("PingSym", "\\PingSym")
+              , ("PingSym2", "\\PingSymTwo")
+              , ("Registry", "\\registry")
+              , ("TwoBuyers", "\\twobuyers")
+              , ("TwoPhaseCommit", "\\twophasecommit")
+              , ("WorkSteal", "\\ws")
               ]
 
 -- -----------------------------------------------------------------------------
@@ -88,22 +115,41 @@ emitProlog lock fn n = do
   return ()
 
 -- -----------------------------------------------------------------------------
+-- TABLE
+-- -----------------------------------------------------------------------------
+
+-- -----------------------------------------------------------------------------
 -- MAIN
 -- -----------------------------------------------------------------------------
 
 main :: IO ()
 main = do
-  (args,emitPl) <- options "Runs brisk benchmarks" parser
+  (args,emitPl,tbl) <- options "Runs brisk benchmarks" parser
   let args' = case args of
                 [] -> defaultArgs
                 _  -> args
   stdoutLock <- Lock.new
-  _ <- parallelInterleaved $
-    if emitPl
-      then [ emitProlog stdoutLock fn n | (fn,n) <- args' ]
-      else [ runBenchmark stdoutLock a | a <- args' ]
 
-  stopGlobalPool
+  if tbl
+    then do putStrLn "\\textbf{Benchmark} & \\textbf{\\#Proc.} & \\textbf{\\spin(s)} & \\textbf{\\Tool(s)} & \\textbf{(LOC)} \\\\"
+            putStrLn "\\midrule"
+            forM_ nameMapping printTableLine
+    else do _ <- parallelInterleaved $
+              if emitPl
+              then [ emitProlog stdoutLock fn n | (fn,n) <- args' ]
+              else [ runBenchmark stdoutLock a | a <- args' ]
+            stopGlobalPool
+
+printTableLine :: (FilePath, String) -> IO ()
+printTableLine (fldr', latexCmd) = do
+  let fldr = "src" </> fldr'
+  hsFiles <- fold (ls fldr) $ filter' (\f' -> maybe False (== "hs") (extension f'))
+  noOfLines :: Int <- fold (cat $ map input hsFiles) countLines
+  let (maxProcCount :: String) = ""
+      (spinRuntime :: String) = ""
+      (toolRuntime :: String) = ""
+  P.printf "%s & %s & %s & %s & %d \\\\\n" latexCmd maxProcCount spinRuntime toolRuntime noOfLines
+
 
 -- -----------------------------------------------------------------------------
 -- HELPER FUNCTIONS
@@ -150,3 +196,6 @@ mkdirp fn = do fnExists <- testdir fn
 
 mergeOutputs :: Shell (Either Line Line) -> Shell Line
 mergeOutputs = fmap (either id id)
+
+filter' :: (a -> Bool) -> Fold a [a]
+filter' p = L.foldMap (\a -> if p a then [a] else []) id
