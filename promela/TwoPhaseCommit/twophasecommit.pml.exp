@@ -1,4 +1,4 @@
-#define N 2
+#define N 8
 /**
  Two Phase Commit Protocol
  */
@@ -79,8 +79,14 @@ proctype coord(int off)
   it = 0;
   for (it : 0 .. (N-1)) {
 if
-:: RECVLOOP(0,CHAN(acceptor_coord,AcceptorResponse),armsg)
-:: RECVLOOP(1,CHAN(acceptor_coord,AcceptorResponse),armsg)
+:: RECVLOOP((0 + 0),CHAN(acceptor_coord,AcceptorResponse),armsg)
+:: RECVLOOP((0 + 1),CHAN(acceptor_coord,AcceptorResponse),armsg)
+:: RECVLOOP((0 + 2),CHAN(acceptor_coord,AcceptorResponse),armsg)
+:: RECVLOOP((0 + 3),CHAN(acceptor_coord,AcceptorResponse),armsg)
+:: RECVLOOP((0 + 4),CHAN(acceptor_coord,AcceptorResponse),armsg)
+:: RECVLOOP((0 + 5),CHAN(acceptor_coord,AcceptorResponse),armsg)
+:: RECVLOOP((0 + 6),CHAN(acceptor_coord,AcceptorResponse),armsg)
+:: RECVLOOP((0 + 7),CHAN(acceptor_coord,AcceptorResponse),armsg)
 fi
   };
 
@@ -101,8 +107,14 @@ fi
   AcceptorAck ackmsg;
   for (it : 0 .. (N-1)) {
 if
-:: RECVLOOP(0,CHAN(acceptor_coord, AcceptorAck),ackmsg)
-:: RECVLOOP(1,CHAN(acceptor_coord, AcceptorAck),ackmsg)
+:: RECVLOOP((0 + 0),CHAN(acceptor_coord, AcceptorAck),ackmsg)
+:: RECVLOOP((0 + 1),CHAN(acceptor_coord, AcceptorAck),ackmsg)
+:: RECVLOOP((0 + 2),CHAN(acceptor_coord, AcceptorAck),ackmsg)
+:: RECVLOOP((0 + 3),CHAN(acceptor_coord, AcceptorAck),ackmsg)
+:: RECVLOOP((0 + 4),CHAN(acceptor_coord, AcceptorAck),ackmsg)
+:: RECVLOOP((0 + 5),CHAN(acceptor_coord, AcceptorAck),ackmsg)
+:: RECVLOOP((0 + 6),CHAN(acceptor_coord, AcceptorAck),ackmsg)
+:: RECVLOOP((0 + 7),CHAN(acceptor_coord, AcceptorAck),ackmsg)
 fi
   };
 

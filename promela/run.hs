@@ -86,8 +86,12 @@ getMaxCount n timeoutArgs f = do
                                 , T.pack $ encodeString f
                                 ] ++ spinArgs) empty
   case r of
-    ExitSuccess    -> do -- TP.printf "[PASS] %-15s : %d\n" (encodeString $ dirname f) n
-                         getMaxCount (n+1) timeoutArgs f
-    ExitFailure rc -> TP.printf "%s %d\n" (encodeString $ dirname f) n
+    ExitSuccess    -> if   n > 100
+                      then TP.printf "[DONE]      %-15s : %d\n" (encodeString $ dirname f) n
+                      else do TP.printf "[PASS]      %-15s : %d\n" (encodeString $ dirname f) n
+                              getMaxCount (n * 2) timeoutArgs f
+    ExitFailure rc -> if   rc > 128
+                      then TP.printf "[FAIL]      %-15s : %d\n" (encodeString $ dirname f) n
+                      else TP.printf "[SPIN FAIL] %-15s : %d\n" (encodeString $ dirname f) n
   assert fExists return ()
   return ()
