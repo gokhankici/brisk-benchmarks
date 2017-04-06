@@ -1,5 +1,5 @@
 /**
- Two Phase Commit Protocol
+ Work Stealing protocol
  */
 #include "../Common/defs.pml"
 
