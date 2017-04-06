@@ -13,7 +13,7 @@ while (my $line = <$fh>)
     if ($line =~ /__RECVLOOP\((.*),(CHAN\(.*\)),(.*)\);/){
         print "if\n";
         for ($i = 0; $i < $n; $i = $i + 1) {
-            print ":: RECVLOOP($i,$2,$3)\n";
+            print ":: RECVLOOP(($1 + $i),$2,$3)\n";
         }
         print "fi\n";
     } else {

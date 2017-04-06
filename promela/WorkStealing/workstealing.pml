@@ -45,13 +45,13 @@ proctype queue(int off)
   WorkMsg work;
 
   for (it : 0 .. (N-1)) {
-    __RECVLOOP(N,CHAN(mapper_queue,RequestMsg),req);
+    __RECVLOOP(0,CHAN(mapper_queue,RequestMsg),req);
     work.tag = Work;
     work.x   = it;
     CHAN(queue_mapper,WorkMsg)[req.x]!work;
   }
   for (it : 0 .. (N-1)) {
-    __RECVLOOP(N,CHAN(mapper_queue,RequestMsg),req);
+    __RECVLOOP(0,CHAN(mapper_queue,RequestMsg),req);
     work.tag = Term;
     CHAN(queue_mapper,WorkMsg)[req.x]!work;
   }

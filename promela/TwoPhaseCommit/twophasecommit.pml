@@ -77,7 +77,7 @@ proctype coord(int off)
   AcceptorResponse armsg;
   it = 0;
   for (it : 0 .. (N-1)) {
-    __RECVLOOP(N,CHAN(acceptor_coord,AcceptorResponse),armsg);
+    __RECVLOOP(0,CHAN(acceptor_coord,AcceptorResponse),armsg);
   };
 
   /* Decide to rollback or commit and broadcast */
@@ -96,7 +96,7 @@ proctype coord(int off)
   /* Wait for acks */
   AcceptorAck ackmsg;
   for (it : 0 .. (N-1)) {
-    __RECVLOOP(N,CHAN(acceptor_coord, AcceptorAck),ackmsg);
+    __RECVLOOP(0,CHAN(acceptor_coord, AcceptorAck),ackmsg);
   };
 
   printf ("DONE\n");

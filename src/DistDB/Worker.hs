@@ -17,6 +17,6 @@ worker _ = loop
     loop = do
       request <- expect :: Process Request
       case request of
-        Allocate _pid _key _val -> return ()
-        Lookup   pid _key       -> send pid (Value "bar")
+        Allocate pid key val -> return ()
+        Lookup   pid key     -> send pid (Value "bar")
       loop

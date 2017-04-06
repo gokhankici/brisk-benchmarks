@@ -56,13 +56,13 @@ active proctype queue()
   WorkMsg work;
 
   for (it : 0 .. (N-1)) {
-    __RECVLOOP(N,CHAN(mapper_queue,RequestMsg),req);
+    __RECVLOOP(0,CHAN(mapper_queue,RequestMsg),req);
     work.tag = Work;
     work.x   = it;
     CHAN(queue_mapper,WorkMsg)[req.x]!work;
   }
   for (it : 0 .. (N-1)) {
-    __RECVLOOP(N,CHAN(mapper_queue,RequestMsg),req);
+    __RECVLOOP(0,CHAN(mapper_queue,RequestMsg),req);
     work.tag = Term;
     CHAN(queue_mapper,WorkMsg)[req.x]!work;
   }
@@ -74,6 +74,6 @@ active proctype master()
   int it;
   ResultMsg res;
   for (it : 1 .. N) {
-    __RECVLOOP(N,CHAN(mapper_master,ResultMsg),res);
+    __RECVLOOP(0,CHAN(mapper_master,ResultMsg),res);
   }
 }

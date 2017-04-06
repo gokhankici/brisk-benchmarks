@@ -54,7 +54,7 @@ proctype database(int off) {
   do
     :: {
       {
-      __RECVLOOP(N,CHAN(client_db,RequestMsg),req);
+      __RECVLOOP(0,CHAN(client_db,RequestMsg),req);
       }
       if
         :: req.tag == Allocate ->

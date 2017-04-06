@@ -19,7 +19,7 @@ database :: [NodeId] -> [NodeId] -> Process ()
 database workerNodes clientNodes = do
   self <- getSelfPid
   workerPids <- spawnSymmetric workerNodes $ $(mkBriskClosure 'worker) ()
-  _clientPids <- spawnSymmetric clientNodes $ $(mkBriskClosure 'client) self
+  clientPids <- spawnSymmetric clientNodes $ $(mkBriskClosure 'client) self -- 
   loop workerPids
   where
     loop ws = do

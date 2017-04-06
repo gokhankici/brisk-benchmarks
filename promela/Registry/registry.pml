@@ -44,7 +44,7 @@ proctype registry() {
   CHAN(master_registry,MasterMsg)[0]?mastermsg;
 
   for(it : 1 .. N ) {
-    __RECVLOOP(N,CHAN(client_registry,ClientMsg),clientmsg);
+    __RECVLOOP(0,CHAN(client_registry,ClientMsg),clientmsg);
   }
 
   okmsg.tag = Ok;

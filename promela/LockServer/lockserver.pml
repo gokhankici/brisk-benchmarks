@@ -41,7 +41,7 @@ active proctype server() {
   int it;
 
   for (it : 1 .. N) {
-    __RECVLOOP(N,CHAN(client_server,LockMsg),lock);
+    __RECVLOOP(0,CHAN(client_server,LockMsg),lock);
     ack.tag = Ack;
     CHAN(server_client,AckMsg)[lock.x]!ack;
     CHAN(client_server,UnlockMsg)[lock.x]?unlock;
