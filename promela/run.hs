@@ -29,6 +29,7 @@ benchmarks = [ "AsyncP/asyncp.pml"
              , "PingSym2/pingsym2.pml"
              , "PingSym/pingsym.pml"
              , "Registry/registry.pml"
+             , "TwoBuyers/twobuyers.pml"
              , "TwoPhaseCommit/twophasecommit.pml"
              , "WorkStealing/workstealing.pml"
              ]
