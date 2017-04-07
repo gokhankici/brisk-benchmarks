@@ -99,7 +99,7 @@ getMaxCount maxSuccess toCheck minFail timeoutArgs f = do
                                 else do let toCheck'    = (toCheck + minFail) `div` 2
                                             maxSuccess' = toCheck
                                             minFail'    = minFail
-                                        when (toCheck' < minFail' + 1 && maxSuccess' < toCheck') $
+                                        when (toCheck' < minFail' && maxSuccess' < toCheck') $
                                           getMaxCount maxSuccess' toCheck' minFail' timeoutArgs f
     ExitFailure rc -> do if   rc > 128
                            then TP.printf "[FAIL]      %-15s : %d\n" (encodeString $ dirname f) toCheck
@@ -107,5 +107,5 @@ getMaxCount maxSuccess toCheck minFail timeoutArgs f = do
                          let toCheck'    = (toCheck + maxSuccess) `div` 2
                              minFail'    = toCheck
                              maxSuccess' = maxSuccess
-                         when (toCheck' < minFail' + 1 && maxSuccess' < toCheck') $
+                         when (toCheck' < minFail' && maxSuccess' < toCheck') $
                            getMaxCount maxSuccess toCheck' minFail' timeoutArgs f
