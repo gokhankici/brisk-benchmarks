@@ -1,6 +1,7 @@
 #!/usr/bin/env stack
 {- stack --resolver lts-8.3 --install-ghc runghc
    --package turtle
+   --package parsec
    --package system-filepath
 -}
 
@@ -10,11 +11,13 @@ module Main where
 
 import Prelude hiding (FilePath)
 import Turtle
-import qualified Data.Text as T (pack, unpack)
+import qualified Data.Text as T (pack, unpack, lines)
 import Filesystem.Path.CurrentOS (encodeString)
 import Control.Monad
 import Control.Exception
 import qualified Text.Printf as TP
+-- import qualified Text.Parsec.String as P
+-- import Text.Parsec.Char
 
 benchmarks = [ "AsyncP/asyncp.pml"
              , "ConcDB/concdb.pml"
@@ -35,7 +38,7 @@ benchmarks = [ "AsyncP/asyncp.pml"
              ]
 
 defaultMemoryLimit = "2000000"
-defaultTimeLimit   = "90"
+defaultTimeLimit   = "60"
 spinArgs           = [ "-run", "-safety", "-m100000" ]
 
 limitParser :: Parser Text
@@ -76,41 +79,79 @@ main = do
                  fExists <- testfile f
                  assert fExists return ())
 
-  forM_ bmks (getMaxCount 0 1 infty timeoutArgs) -- uhhh
+  forM_ bmks (getMaxCount 0 1 (infty,"","") timeoutArgs)
 
 infty = 128
 
-getMaxCount :: Int -> Int -> Int -> [Text] -> FilePath -> IO ()
-getMaxCount maxSuccess toCheck minFail timeoutArgs f = do
+getMaxCount :: Int -> Int -> (Int,Text,Text) -> [Text] -> FilePath -> IO ()
+getMaxCount maxSuccess toCheck oldData@(minFail,out',err') timeoutArgs f = do
   -- https://github.com/pshved/timeout
-  (r, out, _) <- procStrictWithErr
-                   "./timeout" ([ "--confess" ] -- return non zero if mem limit is exceeded
-                                ++ timeoutArgs ++
-                                [ "./nspin"
-                                , T.pack $ show toCheck
-                                , T.pack $ encodeString f
-                                ] ++ spinArgs) empty
+  (r, out, err) <- procStrictWithErr
+                     "./timeout" ([ "--confess" ] -- return non zero if mem limit is exceeded
+                                  ++ timeoutArgs ++
+                                  [ "./nspin"
+                                  , T.pack $ show toCheck
+                                  , T.pack $ encodeString f
+                                  ] ++ spinArgs) empty
   case r of
     ExitSuccess    -> if   toCheck > 100
-                      then TP.printf "[DONE]      %-15s : %d\n" (encodeString $ dirname f) toCheck
+                      then printDone f
                       else do TP.printf "[PASS]      %-15s : %d\n" (encodeString $ dirname f) toCheck
                               if minFail == infty
-                                then getMaxCount toCheck (toCheck * 2) minFail timeoutArgs f
+                                then getMaxCount toCheck (toCheck * 2) oldData timeoutArgs f
                                 else do let toCheck'    = (toCheck + minFail) `div` 2
                                             maxSuccess' = toCheck
                                             minFail'    = minFail
+                                            newData     = (minFail', out, err)
                                         if (toCheck' < minFail' && maxSuccess' < toCheck')
-                                          then getMaxCount maxSuccess' toCheck' minFail' timeoutArgs f
-                                          else TP.printf "[MAX]       %-15s : %d\n" (encodeString $ dirname f) maxSuccess'
+                                          then getMaxCount maxSuccess' toCheck' newData timeoutArgs f
+                                          else printMinFail f newData
     ExitFailure rc -> do if   rc > 128
                            then TP.printf "[FAIL]      %-15s : %d\n" (encodeString $ dirname f) toCheck
                            else TP.printf "[SPIN FAIL] %-15s : %d\n" (encodeString $ dirname f) toCheck
                          let toCheck'    = (toCheck + maxSuccess) `div` 2
                              minFail'    = toCheck
+                             newData     = (minFail', out, err)
                              maxSuccess' = maxSuccess
-                         -- when (toCheck' < minFail' && maxSuccess' < toCheck') $
-                         --   getMaxCount maxSuccess toCheck' minFail' timeoutArgs f
                          if (toCheck' < minFail' && maxSuccess' < toCheck')
-                           then getMaxCount maxSuccess' toCheck' minFail' timeoutArgs f
-                           else TP.printf "[MAX]       %-15s : %d\n" (encodeString $ dirname f) maxSuccess'
+                           then getMaxCount maxSuccess' toCheck' newData timeoutArgs f
+                           else printMinFail f newData
 
+printDone :: FilePath -> IO ()
+printDone f = do
+  let bmk = (encodeString $ dirname f)
+  TP.printf ", (Infty \"%s\")\n" bmk
+
+printMinFail :: FilePath -> (Int, Text, Text) -> IO ()
+printMinFail f (minFail, out, err) = do
+  let bmk = (encodeString $ dirname f)
+  TP.printf ", (SpinFail \"%s\" %d)\n" bmk minFail
+  forM_ (concatMap (match spinParser) (T.lines out)) print
+  return ()
+
+data SpinInfo = SpinInfo { s_depth       :: Int
+                         , s_states      :: Double
+                         , s_transitions :: Double
+                         , s_memory      :: Double
+                         , s_time        :: Double
+                         , s_r           :: Double
+                         }
+                deriving (Show)
+  
+spinParser :: Pattern SpinInfo
+spinParser = SpinInfo <$> (text "Depth=" *> spaces *> intParser <* spaces)
+                      <*> (text "States=" *> spaces *> doubleParser <* spaces)
+                      <*> (text "Transitions=" *> spaces *> doubleParser <* spaces)
+                      <*> (text "Memory=" *> spaces *> doubleParser <* spaces)
+                      <*> (text "t=" *> spaces *> doubleParser <* spaces)
+                      <*> (text "R=" *> spaces *> doubleParser <* spaces)
+
+intParser :: Pattern Int
+intParser = decimal
+
+doubleParser :: Pattern Double
+doubleParser = rd <$> (some $ oneOf "1234567890+-.e") -- umm ...
+  where
+    rd :: String -> Double
+    rd = read
+  
