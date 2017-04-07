@@ -57,33 +57,37 @@ defaultArgs = [ ("src/MapReduce/Master.hs", "master")
               , ("src/LockServer/Master.hs", "master")
               ]
 
-data SpinTime = MaxN     Int
-              | SpinFail Int
-              | Infty           -- more than 100
+nameMapping = [ ("AsyncP"         , "\\AsyncPing")
+              , ("ConcDB"         , "\\concdb")
+              , ("DistDB"         , "\\distdb")
+              , ("Firewall"       , "\\firewall")
+              , ("LockServer"     , "\\lockserver")
+              , ("MapReduce"      , "\\mapreduce")
+              , ("MultiPing"      , "\\MultiPing")
+              , ("Parikh"         , "\\parikh")
+              , ("PingDet"        , "\\PingDet")
+              , ("PingIter"       , "\\PingIter")
+              , ("PingSym"        , "\\PingSym")
+              , ("PingSym2"       , "\\PingSymTwo")
+              , ("Registry"       , "\\registry")
+              , ("TwoBuyers"      , "\\twobuyers")
+              , ("TwoPhaseCommit" , "\\twophasecommit")
+              , ("WorkSteal"      , "\\ws")
+              ]
 
-data Row = Row { name     :: FilePath
-               , latexCmd :: String
-               -- , spinMaxN :: SpinTime
-               -- , briskT   :: Double
-               -- , spinT    :: Double
-               }
+data Spin = SpinRow  String     -- name
+                     Int        -- min N to fail
+                     Double     -- max # of states reached before failing
+                     Double     -- memory used to store those states
+                     Double     -- timestamp before failure
+          -- failed due to too many channels
+          | SpinFail String     -- name
+                     Int        -- min N to fail
+          -- able to check N > 100
+          | Infty    String     -- name 
 
-nameMapping = [ Row "AsyncP"         "\\AsyncPing"
-              , Row "ConcDB"         "\\concdb"
-              , Row "DistDB"         "\\distdb"
-              , Row "Firewall"       "\\firewall"
-              , Row "LockServer"     "\\lockserver"
-              , Row "MapReduce"      "\\mapreduce"
-              , Row "MultiPing"      "\\MultiPing"
-              , Row "Parikh"         "\\parikh"
-              , Row "PingDet"        "\\PingDet"
-              , Row "PingIter"       "\\PingIter"
-              , Row "PingSym"        "\\PingSym"
-              , Row "PingSym2"       "\\PingSymTwo"
-              , Row "Registry"       "\\registry"
-              , Row "TwoBuyers"      "\\twobuyers"
-              , Row "TwoPhaseCommit" "\\twophasecommit"
-              , Row "WorkSteal"      "\\ws"
+spinResults :: [Spin]
+spinResults = [
               ]
 
 -- -----------------------------------------------------------------------------
@@ -141,15 +145,15 @@ main = do
   if tbl
     then do putStrLn "\\textbf{Benchmark} & \\textbf{\\#Proc.} & \\textbf{\\spin(s)} & \\textbf{\\Tool(s)} & \\textbf{(LOC)} \\\\"
             putStrLn "\\midrule"
-            forM_ nameMapping printTableLine
+            forM_ (zip nameMapping spinResults) printTableLine
     else do _ <- parallelInterleaved $
               if emitPl
               then [ emitProlog stdoutLock fn n | (fn,n) <- args' ]
               else [ runBenchmark stdoutLock a | a <- args' ]
             stopGlobalPool
 
-printTableLine :: Row -> IO ()
-printTableLine Row{..} = do
+printTableLine :: ((FilePath, String), Spin) -> IO ()
+printTableLine ((name, latexCmd), spin) = do
   let fldr = "src" </> name
   hsFiles <- fold (ls fldr) $ filter' (\f' -> maybe False (== "hs") (extension f'))
   noOfLines :: Int <- fold (cat $ map input hsFiles) countLines
