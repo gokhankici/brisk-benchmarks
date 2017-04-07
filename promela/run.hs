@@ -36,7 +36,7 @@ benchmarks = [ "AsyncP/asyncp.pml"
 
 defaultMemoryLimit = "2000000"
 defaultTimeLimit   = "90"
-spinArgs           = [ "-run", "-safety" ]
+spinArgs           = [ "-run", "-safety", "-m100000" ]
 
 limitParser :: Parser Text
 limitParser = optText "memorylimit" 'm' "Limit the memory usage (in Ks) of spin (default: 2000000K)"
@@ -49,8 +49,8 @@ timeParser = optText "timelimit" 't' "Limit the time (in secs) of spin (default:
 
 main :: IO ()
 main = do
-  (m,bmk,t) <- options "Run promela benchmarks" $ (,,) <$> optional limitParser
-                                                       <*> optional bmkParser
+  (m,bmks',t) <- options "Run promela benchmarks" $ (,,) <$> optional limitParser
+                                                       <*> many bmkParser
                                                        <*> optional timeParser
 
   let memoryLimit = case m of
@@ -65,33 +65,47 @@ main = do
                     , "-t", timeLimit
                     ]
 
-  let bmks = case bmk of
-               Nothing   -> benchmarks
-               Just bmk' -> [bmk']
+  let bmks = case bmks' of
+               [] -> benchmarks
+               _  -> bmks'
 
   TP.printf "Memory limit: %sK\n" (T.unpack memoryLimit)
   TP.printf "Time limit:   %s secs\n\n" (T.unpack timeLimit)
 
-  forM_ bmks (getMaxCount 1 timeoutArgs)
+  forM_ bmks (\f -> do
+                 fExists <- testfile f
+                 assert fExists return ())
 
-getMaxCount :: Int -> [Text] -> FilePath -> IO ()
-getMaxCount n timeoutArgs f = do
-  fExists <- testfile f
+  forM_ bmks (getMaxCount 0 1 infty timeoutArgs) -- uhhh
+
+infty = 128
+
+getMaxCount :: Int -> Int -> Int -> [Text] -> FilePath -> IO ()
+getMaxCount maxSuccess toCheck minFail timeoutArgs f = do
   -- https://github.com/pshved/timeout
   (r, out, _) <- procStrictWithErr
                    "./timeout" ([ "--confess" ] -- return non zero if mem limit is exceeded
                                 ++ timeoutArgs ++
                                 [ "./nspin"
-                                , T.pack $ show n
+                                , T.pack $ show toCheck
                                 , T.pack $ encodeString f
                                 ] ++ spinArgs) empty
   case r of
-    ExitSuccess    -> if   n > 100
-                      then TP.printf "[DONE]      %-15s : %d\n" (encodeString $ dirname f) n
-                      else do TP.printf "[PASS]      %-15s : %d\n" (encodeString $ dirname f) n
-                              getMaxCount (n * 2) timeoutArgs f
-    ExitFailure rc -> if   rc > 128
-                      then TP.printf "[FAIL]      %-15s : %d\n" (encodeString $ dirname f) n
-                      else TP.printf "[SPIN FAIL] %-15s : %d\n" (encodeString $ dirname f) n
-  assert fExists return ()
-  return ()
+    ExitSuccess    -> if   toCheck > 100
+                      then TP.printf "[DONE]      %-15s : %d\n" (encodeString $ dirname f) toCheck
+                      else do TP.printf "[PASS]      %-15s : %d\n" (encodeString $ dirname f) toCheck
+                              if minFail == infty
+                                then getMaxCount toCheck (toCheck * 2) minFail timeoutArgs f
+                                else do let toCheck'    = (toCheck + minFail) `div` 2
+                                            maxSuccess' = toCheck
+                                            minFail'    = minFail
+                                        when (toCheck' < minFail' + 1 && maxSuccess' < toCheck') $
+                                          getMaxCount maxSuccess' toCheck' minFail' timeoutArgs f
+    ExitFailure rc -> do if   rc > 128
+                           then TP.printf "[FAIL]      %-15s : %d\n" (encodeString $ dirname f) toCheck
+                           else TP.printf "[SPIN FAIL] %-15s : %d\n" (encodeString $ dirname f) toCheck
+                         let toCheck'    = (toCheck + maxSuccess) `div` 2
+                             minFail'    = toCheck
+                             maxSuccess' = maxSuccess
+                         when (toCheck' < minFail' + 1 && maxSuccess' < toCheck') $
+                           getMaxCount maxSuccess toCheck' minFail' timeoutArgs f
