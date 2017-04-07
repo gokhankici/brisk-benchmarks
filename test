@@ -2,5 +2,7 @@
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
+stack build --ghc-options -fforce-recomp
+
 stack exec -- brisk-benchmarks $@
 

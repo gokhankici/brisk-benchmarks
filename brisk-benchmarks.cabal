@@ -21,7 +21,8 @@ executable brisk-benchmarks
 
 library
   hs-source-dirs:      src
-  ghc-options:         -fplugin Brisk.Plugin -package distributed-static -fforce-recomp
+  ghc-options:         -fplugin Brisk.Plugin -package distributed-static
+  -- -fforce-recomp
 
   exposed-modules:     MapReduce.Mapper
                      , MapReduce.Master
@@ -90,3 +91,4 @@ library
                      , system-filepath
                      , text
                      , transformers
+                     , directory

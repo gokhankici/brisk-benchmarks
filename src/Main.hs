@@ -10,6 +10,7 @@ import           System.Console.ANSI
 import           Control.Concurrent.ParallelIO.Global
 import           Control.Concurrent.Lock         ( Lock )
 import qualified Control.Concurrent.Lock as Lock ( new, with )
+import           Control.Exception
 import           Control.Monad
 import qualified Control.Foldl as L
 import qualified Text.Printf as P
@@ -75,19 +76,37 @@ nameMapping = [ ("AsyncP"         , "\\AsyncPing")
               , ("WorkSteal"      , "\\ws")
               ]
 
-data Spin = SpinRow  String     -- name
-                     Int        -- min N to fail
-                     Double     -- max # of states reached before failing
-                     Double     -- memory used to store those states
-                     Double     -- timestamp before failure
+data Spin = SpinRow  { s_name  :: String     -- name
+                     , s_minN  :: Int        -- min N to fail
+                     , s_state :: Double     -- max # of states reached before failing
+                     , s_mem   :: Double     -- memory used to store those states
+                     , s_time  :: Double     -- timestamp before failure
+                     }
           -- failed due to too many channels
-          | SpinFail String     -- name
-                     Int        -- min N to fail
+          | SpinFail { s_name :: String     -- name
+                     , s_minN :: Int        -- min N to fail
+                     }
           -- able to check N > 100
-          | Infty    String     -- name 
+          | Infty    { s_name :: String     -- name 
+                     }
 
 spinResults :: [Spin]
-spinResults = [
+spinResults = [ (SpinRow "AsyncP" 11 1.6e7 4974.259 56.6)
+              , (SpinFail "ConcDB" 64)
+              , (SpinRow "DistDB" 2 2.1e7 7673.966 46.2)
+              , (SpinRow "Firewall" 9 1.7e7 5140.47 55.6)
+              , (SpinRow "LockServer" 12 1.5e7 4828.458 55.8)
+              , (SpinRow "MapReduce" 4 2.1e7 7507.657 44.8)
+              , (Infty "MultiPing")
+              , (Infty "Parikh")
+              , (SpinRow "PingDet" 13 1.0e7 3757.267 56.3)
+              , (SpinRow "PingIter" 11 1.5e7 4671.134 55.2)
+              , (SpinRow "PingSym" 10 1.6e7 4108.438 55.1)
+              , (SpinRow "PingSym2" 7 2.4e7 6343.888 58.5)
+              , (SpinRow "Registry" 10 2.2e7 7570.157 53.0)
+              , (Infty "TwoBuyers")
+              , (SpinRow "TwoPhaseCommit" 6 1.8e7 7679.923 40.0)
+              , (SpinRow "WorkSteal" 5 2.5e7 7700.724 44.9)
               ]
 
 -- -----------------------------------------------------------------------------
@@ -131,6 +150,29 @@ emitProlog lock fn n = do
   return ()
 
 -- -----------------------------------------------------------------------------
+-- TABLE
+-- -----------------------------------------------------------------------------
+
+printTableLine :: ((FilePath, String), Spin) -> IO ()
+printTableLine ((name, latexCmd), spin) = do
+  assert (encodeString name == s_name spin) (return ())
+  let fldr = "src" </> name
+  hsFiles <- fold (ls fldr) $ filter' (\f' -> maybe False (== "hs") (extension f'))
+  noOfLines :: Int <- fold (cat $ map input hsFiles) countLines
+  let maxProcCount = case spin of
+                       SpinRow{..}  -> show s_minN
+                       SpinFail{..} -> show s_minN
+                       Infty{..}    -> "-"
+  let spinRuntime = case spin of
+                       SpinRow{..}  -> show s_time
+                       SpinFail{..} -> "-"
+                       Infty{..}    -> "-"
+  let (toolRuntime :: String) = ""
+  P.printf "%s & %s & %s & %s & %d \\\\\n" latexCmd maxProcCount spinRuntime toolRuntime noOfLines
+
+
+
+-- -----------------------------------------------------------------------------
 -- MAIN
 -- -----------------------------------------------------------------------------
 
@@ -145,23 +187,13 @@ main = do
   if tbl
     then do putStrLn "\\textbf{Benchmark} & \\textbf{\\#Proc.} & \\textbf{\\spin(s)} & \\textbf{\\Tool(s)} & \\textbf{(LOC)} \\\\"
             putStrLn "\\midrule"
+            assert (length nameMapping == length spinResults) (return ())
             forM_ (zip nameMapping spinResults) printTableLine
     else do _ <- parallelInterleaved $
               if emitPl
               then [ emitProlog stdoutLock fn n | (fn,n) <- args' ]
               else [ runBenchmark stdoutLock a | a <- args' ]
             stopGlobalPool
-
-printTableLine :: ((FilePath, String), Spin) -> IO ()
-printTableLine ((name, latexCmd), spin) = do
-  let fldr = "src" </> name
-  hsFiles <- fold (ls fldr) $ filter' (\f' -> maybe False (== "hs") (extension f'))
-  noOfLines :: Int <- fold (cat $ map input hsFiles) countLines
-  let (maxProcCount :: String) = ""
-      (spinRuntime :: String) = ""
-      (toolRuntime :: String) = ""
-  P.printf "%s & %s & %s & %s & %d \\\\\n" latexCmd maxProcCount spinRuntime toolRuntime noOfLines
-
 
 -- -----------------------------------------------------------------------------
 -- HELPER FUNCTIONS

@@ -34,12 +34,12 @@ benchmarks = [ "AsyncP/asyncp.pml"
              , "Registry/registry.pml"
              , "TwoBuyers/twobuyers.pml"
              , "TwoPhaseCommit/twophasecommit.pml"
-             , "WorkStealing/workstealing.pml"
+             , "WorkSteal/workstealing.pml"
              ]
 
 defaultMemoryLimit = "2000000"
 defaultTimeLimit   = "60"
-spinArgs           = [ "-run", "-safety", "-m100000" ]
+spinArgs           = [ "-run", "-safety", "-m10000000", "-DVECTORSZ=4096" ]
 
 limitParser :: Parser Text
 limitParser = optText "memorylimit" 'm' "Limit the memory usage (in Ks) of spin (default: 2000000K)"
