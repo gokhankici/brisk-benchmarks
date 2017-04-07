@@ -1,8 +1,9 @@
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 import           Prelude hiding (FilePath)
-import           Turtle
+import           Turtle hiding (Row)
 import qualified Data.Text as T (pack, unpack, append, replace, dropWhileEnd)
 import           Filesystem.Path.CurrentOS (encodeString)
 import           System.Console.ANSI
@@ -34,7 +35,7 @@ parser :: Parser ([Input], Bool, Bool)
 parser = (,,) <$> (many $ (,) <$> bmkParser <*> binderParser)
               <*> plParser
               <*> tableParser
-         
+
 
 defaultArgs :: [Input]
 defaultArgs = [ ("src/MapReduce/Master.hs", "master")
@@ -56,22 +57,33 @@ defaultArgs = [ ("src/MapReduce/Master.hs", "master")
               , ("src/LockServer/Master.hs", "master")
               ]
 
-nameMapping = [ ("MultiPing", "\\MultiPing")
-              , ("AsyncP", "\\AsyncPing")
-              , ("ConcDB", "\\concdb")
-              , ("DistDB", "\\distdb")
-              , ("Firewall", "\\firewall")
-              , ("LockServer", "\\lockserver")
-              , ("MapReduce", "\\mapreduce")
-              , ("Parikh", "\\parikh")
-              , ("PingDet", "\\PingDet")
-              , ("PingIter", "\\PingIter")
-              , ("PingSym", "\\PingSym")
-              , ("PingSym2", "\\PingSymTwo")
-              , ("Registry", "\\registry")
-              , ("TwoBuyers", "\\twobuyers")
-              , ("TwoPhaseCommit", "\\twophasecommit")
-              , ("WorkSteal", "\\ws")
+data SpinTime = MaxN     Int
+              | SpinFail Int
+              | Infty           -- more than 100
+
+data Row = Row { name     :: FilePath
+               , latexCmd :: String
+               -- , spinMaxN :: SpinTime
+               -- , briskT   :: Double
+               -- , spinT    :: Double
+               }
+
+nameMapping = [ Row "AsyncP"         "\\AsyncPing"
+              , Row "ConcDB"         "\\concdb"
+              , Row "DistDB"         "\\distdb"
+              , Row "Firewall"       "\\firewall"
+              , Row "LockServer"     "\\lockserver"
+              , Row "MapReduce"      "\\mapreduce"
+              , Row "MultiPing"      "\\MultiPing"
+              , Row "Parikh"         "\\parikh"
+              , Row "PingDet"        "\\PingDet"
+              , Row "PingIter"       "\\PingIter"
+              , Row "PingSym"        "\\PingSym"
+              , Row "PingSym2"       "\\PingSymTwo"
+              , Row "Registry"       "\\registry"
+              , Row "TwoBuyers"      "\\twobuyers"
+              , Row "TwoPhaseCommit" "\\twophasecommit"
+              , Row "WorkSteal"      "\\ws"
               ]
 
 -- -----------------------------------------------------------------------------
@@ -85,8 +97,8 @@ runBenchmark lock (fn,n) = do
                             , "brisk"
                             , "--file", fromPath fn
                             , "--binder", n
-                            ] empty 
-  
+                            ] empty
+
   case rc of
     ExitSuccess   -> Lock.with lock $
                      success $ "[SUCCESS] " <++> fromPath (dirname fn) <++> " - " <++> n
@@ -136,9 +148,9 @@ main = do
               else [ runBenchmark stdoutLock a | a <- args' ]
             stopGlobalPool
 
-printTableLine :: (FilePath, String) -> IO ()
-printTableLine (fldr', latexCmd) = do
-  let fldr = "src" </> fldr'
+printTableLine :: Row -> IO ()
+printTableLine Row{..} = do
+  let fldr = "src" </> name
   hsFiles <- fold (ls fldr) $ filter' (\f' -> maybe False (== "hs") (extension f'))
   noOfLines :: Int <- fold (cat $ map input hsFiles) countLines
   let (maxProcCount :: String) = ""
