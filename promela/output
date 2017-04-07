@@ -9,6 +9,7 @@ Time limit:   60 secs
 [FAIL]      AsyncP          : 12
 [PASS]      AsyncP          : 10
 [FAIL]      AsyncP          : 11
+[MAX]       AsyncP          : 10
 [PASS]      ConcDB          : 1
 [PASS]      ConcDB          : 2
 [PASS]      ConcDB          : 4
@@ -21,8 +22,10 @@ Time limit:   60 secs
 [PASS]      ConcDB          : 60
 [PASS]      ConcDB          : 62
 [PASS]      ConcDB          : 63
+[MAX]       ConcDB          : 63
 [PASS]      DistDB          : 1
 [FAIL]      DistDB          : 2
+[MAX]       DistDB          : 1
 [PASS]      Firewall        : 1
 [PASS]      Firewall        : 2
 [PASS]      Firewall        : 4
@@ -31,6 +34,7 @@ Time limit:   60 secs
 [FAIL]      Firewall        : 12
 [FAIL]      Firewall        : 10
 [FAIL]      Firewall        : 9
+[MAX]       Firewall        : 8
 [PASS]      LockServer      : 1
 [PASS]      LockServer      : 2
 [PASS]      LockServer      : 4
@@ -39,10 +43,12 @@ Time limit:   60 secs
 [FAIL]      LockServer      : 12
 [PASS]      LockServer      : 10
 [PASS]      LockServer      : 11
+[MAX]       LockServer      : 11
 [PASS]      MapReduce       : 1
 [PASS]      MapReduce       : 2
 [FAIL]      MapReduce       : 4
 [PASS]      MapReduce       : 3
+[MAX]       MapReduce       : 3
 [PASS]      MultiPing       : 1
 [PASS]      MultiPing       : 2
 [PASS]      MultiPing       : 4
@@ -68,9 +74,10 @@ Time limit:   60 secs
 [PASS]      PingDet         : 4
 [PASS]      PingDet         : 8
 [FAIL]      PingDet         : 16
-[PASS]      PingDet         : 12
-[FAIL]      PingDet         : 14
-[FAIL]      PingDet         : 13
+[FAIL]      PingDet         : 12
+[PASS]      PingDet         : 10
+[PASS]      PingDet         : 11
+[MAX]       PingDet         : 11
 [PASS]      PingIter        : 1
 [PASS]      PingIter        : 2
 [PASS]      PingIter        : 4
@@ -79,12 +86,14 @@ Time limit:   60 secs
 [FAIL]      PingIter        : 12
 [PASS]      PingIter        : 10
 [FAIL]      PingIter        : 11
+[MAX]       PingIter        : 10
 [PASS]      PingSym2        : 1
 [PASS]      PingSym2        : 2
 [PASS]      PingSym2        : 4
 [FAIL]      PingSym2        : 8
 [PASS]      PingSym2        : 6
 [FAIL]      PingSym2        : 7
+[MAX]       PingSym2        : 6
 [PASS]      PingSym         : 1
 [PASS]      PingSym         : 2
 [PASS]      PingSym         : 4
@@ -93,6 +102,7 @@ Time limit:   60 secs
 [FAIL]      PingSym         : 12
 [FAIL]      PingSym         : 10
 [PASS]      PingSym         : 9
+[MAX]       PingSym         : 9
 [PASS]      Registry        : 1
 [PASS]      Registry        : 2
 [PASS]      Registry        : 4
@@ -101,6 +111,7 @@ Time limit:   60 secs
 [FAIL]      Registry        : 12
 [FAIL]      Registry        : 10
 [PASS]      Registry        : 9
+[MAX]       Registry        : 9
 [PASS]      TwoBuyers       : 1
 [PASS]      TwoBuyers       : 2
 [PASS]      TwoBuyers       : 4
@@ -115,9 +126,11 @@ Time limit:   60 secs
 [FAIL]      TwoPhaseCommit  : 8
 [FAIL]      TwoPhaseCommit  : 6
 [PASS]      TwoPhaseCommit  : 5
+[MAX]       TwoPhaseCommit  : 5
 [PASS]      WorkStealing    : 1
 [PASS]      WorkStealing    : 2
 [PASS]      WorkStealing    : 4
 [FAIL]      WorkStealing    : 8
 [FAIL]      WorkStealing    : 6
 [FAIL]      WorkStealing    : 5
+[MAX]       WorkStealing    : 4
