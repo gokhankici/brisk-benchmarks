@@ -93,6 +93,7 @@ getMaxCount maxSuccess toCheck oldData@(minFail,out',err') timeoutArgs f = do
                                   , T.pack $ show toCheck
                                   , T.pack $ encodeString f
                                   ] ++ spinArgs) empty
+
   case r of
     ExitSuccess    -> if   toCheck > 100
                       then printDone f
@@ -102,7 +103,7 @@ getMaxCount maxSuccess toCheck oldData@(minFail,out',err') timeoutArgs f = do
                                 else do let toCheck'    = (toCheck + minFail) `div` 2
                                             maxSuccess' = toCheck
                                             minFail'    = minFail
-                                            newData     = (minFail', out, err)
+                                            newData     = oldData
                                         if (toCheck' < minFail' && maxSuccess' < toCheck')
                                           then getMaxCount maxSuccess' toCheck' newData timeoutArgs f
                                           else printMinFail f newData
@@ -110,9 +111,9 @@ getMaxCount maxSuccess toCheck oldData@(minFail,out',err') timeoutArgs f = do
                            then TP.printf "[FAIL]      %-15s : %d\n" (encodeString $ dirname f) toCheck
                            else TP.printf "[SPIN FAIL] %-15s : %d\n" (encodeString $ dirname f) toCheck
                          let toCheck'    = (toCheck + maxSuccess) `div` 2
+                             maxSuccess' = maxSuccess
                              minFail'    = toCheck
                              newData     = (minFail', out, err)
-                             maxSuccess' = maxSuccess
                          if (toCheck' < minFail' && maxSuccess' < toCheck')
                            then getMaxCount maxSuccess' toCheck' newData timeoutArgs f
                            else printMinFail f newData
@@ -125,9 +126,14 @@ printDone f = do
 printMinFail :: FilePath -> (Int, Text, Text) -> IO ()
 printMinFail f (minFail, out, err) = do
   let bmk = (encodeString $ dirname f)
-  TP.printf ", (SpinFail \"%s\" %d)\n" bmk minFail
-  forM_ (concatMap (match spinParser) (T.lines out)) print
-  return ()
+      spinrows = concatMap (match spinParser) (T.lines out)
+  case spinrows of
+    [] -> do putStr $ T.unpack out
+             putStr $ T.unpack err
+             TP.printf ", (SpinFail \"%s\" %d)\n" bmk minFail
+    _  -> do let spinrow = last spinrows
+             TP.printf ", (SpinRow \"%s\" %d %e %g %g)\n"
+               bmk minFail (s_states spinrow) (s_memory spinrow) (s_time spinrow)
 
 data SpinInfo = SpinInfo { s_depth       :: Int
                          , s_states      :: Double
