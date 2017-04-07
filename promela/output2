@@ -1,0 +1,139 @@
+Memory limit: 8000000K
+Time limit:   60 secs
+
+[PASS]      AsyncP          : 1
+[PASS]      AsyncP          : 2
+[PASS]      AsyncP          : 4
+[PASS]      AsyncP          : 8
+[FAIL]      AsyncP          : 16
+[FAIL]      AsyncP          : 12
+[PASS]      AsyncP          : 10
+[FAIL]      AsyncP          : 11
+, (SpinRow "AsyncP" 11 1.6e7 4974.259 56.6)
+[PASS]      ConcDB          : 1
+[PASS]      ConcDB          : 2
+[PASS]      ConcDB          : 4
+[PASS]      ConcDB          : 8
+[PASS]      ConcDB          : 16
+[PASS]      ConcDB          : 32
+[SPIN FAIL] ConcDB          : 64
+[PASS]      ConcDB          : 48
+[PASS]      ConcDB          : 56
+[PASS]      ConcDB          : 60
+[PASS]      ConcDB          : 62
+[PASS]      ConcDB          : 63
+spin -run -safety -m100000 ConcDB/concdb.pml.exp
+spin: ConcDB/concdb.pml.exp:13, Error: too many channel types
+FINISHED CPU 0.00 MEM 0 MAXMEM -1 STALE 0 MAXMEM_RSS -1
+, (SpinFail "ConcDB" 64)
+[PASS]      DistDB          : 1
+[FAIL]      DistDB          : 2
+, (SpinRow "DistDB" 2 2.1e7 7673.966 46.2)
+[PASS]      Firewall        : 1
+[PASS]      Firewall        : 2
+[PASS]      Firewall        : 4
+[PASS]      Firewall        : 8
+[FAIL]      Firewall        : 16
+[FAIL]      Firewall        : 12
+[FAIL]      Firewall        : 10
+[FAIL]      Firewall        : 9
+, (SpinRow "Firewall" 9 1.7e7 5140.47 55.6)
+[PASS]      LockServer      : 1
+[PASS]      LockServer      : 2
+[PASS]      LockServer      : 4
+[PASS]      LockServer      : 8
+[FAIL]      LockServer      : 16
+[FAIL]      LockServer      : 12
+[PASS]      LockServer      : 10
+[PASS]      LockServer      : 11
+, (SpinRow "LockServer" 12 1.5e7 4828.458 55.8)
+[PASS]      MapReduce       : 1
+[PASS]      MapReduce       : 2
+[FAIL]      MapReduce       : 4
+[PASS]      MapReduce       : 3
+, (SpinRow "MapReduce" 4 2.1e7 7507.657 44.8)
+[PASS]      MultiPing       : 1
+[PASS]      MultiPing       : 2
+[PASS]      MultiPing       : 4
+[PASS]      MultiPing       : 8
+[PASS]      MultiPing       : 16
+[PASS]      MultiPing       : 32
+[PASS]      MultiPing       : 64
+[SPIN FAIL] MultiPing       : 128
+[PASS]      MultiPing       : 96
+[SPIN FAIL] MultiPing       : 192
+[SPIN FAIL] MultiPing       : 144
+, (Infty "MultiPing")
+[PASS]      Parikh          : 1
+[PASS]      Parikh          : 2
+[PASS]      Parikh          : 4
+[PASS]      Parikh          : 8
+[PASS]      Parikh          : 16
+[PASS]      Parikh          : 32
+[PASS]      Parikh          : 64
+, (Infty "Parikh")
+[PASS]      PingDet         : 1
+[PASS]      PingDet         : 2
+[PASS]      PingDet         : 4
+[PASS]      PingDet         : 8
+[FAIL]      PingDet         : 16
+[PASS]      PingDet         : 12
+[FAIL]      PingDet         : 14
+[FAIL]      PingDet         : 13
+, (SpinRow "PingDet" 13 1.0e7 3757.267 56.3)
+[PASS]      PingIter        : 1
+[PASS]      PingIter        : 2
+[PASS]      PingIter        : 4
+[PASS]      PingIter        : 8
+[FAIL]      PingIter        : 16
+[FAIL]      PingIter        : 12
+[PASS]      PingIter        : 10
+[FAIL]      PingIter        : 11
+, (SpinRow "PingIter" 11 1.5e7 4671.134 55.2)
+[PASS]      PingSym2        : 1
+[PASS]      PingSym2        : 2
+[PASS]      PingSym2        : 4
+[FAIL]      PingSym2        : 8
+[PASS]      PingSym2        : 6
+[FAIL]      PingSym2        : 7
+, (SpinRow "PingSym2" 7 2.4e7 6343.888 58.5)
+[PASS]      PingSym         : 1
+[PASS]      PingSym         : 2
+[PASS]      PingSym         : 4
+[PASS]      PingSym         : 8
+[FAIL]      PingSym         : 16
+[FAIL]      PingSym         : 12
+[FAIL]      PingSym         : 10
+[PASS]      PingSym         : 9
+, (SpinRow "PingSym" 10 1.6e7 4108.438 55.1)
+[PASS]      Registry        : 1
+[PASS]      Registry        : 2
+[PASS]      Registry        : 4
+[PASS]      Registry        : 8
+[FAIL]      Registry        : 16
+[FAIL]      Registry        : 12
+[FAIL]      Registry        : 10
+[PASS]      Registry        : 9
+, (SpinRow "Registry" 10 2.2e7 7570.157 53.0)
+[PASS]      TwoBuyers       : 1
+[PASS]      TwoBuyers       : 2
+[PASS]      TwoBuyers       : 4
+[PASS]      TwoBuyers       : 8
+[PASS]      TwoBuyers       : 16
+[PASS]      TwoBuyers       : 32
+[PASS]      TwoBuyers       : 64
+, (Infty "TwoBuyers")
+[PASS]      TwoPhaseCommit  : 1
+[PASS]      TwoPhaseCommit  : 2
+[PASS]      TwoPhaseCommit  : 4
+[FAIL]      TwoPhaseCommit  : 8
+[FAIL]      TwoPhaseCommit  : 6
+[PASS]      TwoPhaseCommit  : 5
+, (SpinRow "TwoPhaseCommit" 6 1.8e7 7679.923 40.0)
+[PASS]      WorkStealing    : 1
+[PASS]      WorkStealing    : 2
+[PASS]      WorkStealing    : 4
+[FAIL]      WorkStealing    : 8
+[FAIL]      WorkStealing    : 6
+[FAIL]      WorkStealing    : 5
+, (SpinRow "WorkStealing" 5 2.5e7 7700.724 44.9)
