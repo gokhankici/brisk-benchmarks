@@ -92,7 +92,7 @@ data Spin = SpinRow  { s_name  :: String     -- name
 
 spinResults :: [Spin]
 spinResults = [ (SpinRow "AsyncP" 11 1.6e7 4974.259 56.6)
-              , (SpinFail "ConcDB" 64)
+              , (SpinRow "ConcDB" 6 1.0e7 7512.058 52.6)
               , (SpinRow "DistDB" 2 2.1e7 7673.966 46.2)
               , (SpinRow "Firewall" 9 1.7e7 5140.47 55.6)
               , (SpinRow "LockServer" 12 1.5e7 4828.458 55.8)
@@ -167,8 +167,16 @@ printTableLine ((name, latexCmd), spin) = do
                        SpinRow{..}  -> show s_time
                        SpinFail{..} -> "-"
                        Infty{..}    -> "-"
-  let (toolRuntime :: String) = ""
-  P.printf "%s & %s & %s & %s & %d \\\\\n" latexCmd maxProcCount spinRuntime toolRuntime noOfLines
+  let spinMem = case spin of
+                  SpinRow{..}  -> P.printf "%.1g" (s_mem / 1000)
+                  SpinFail{..} -> "-" :: String
+                  Infty{..}    -> "-"
+  let (toolRuntime :: String) = "tbd"
+  let isSym = case spin of
+                Infty{..} -> "" :: String
+                _         -> "\\tck"
+  P.printf "%s & %s & %s & %s & %s & %s & %d \\\\\n"
+    latexCmd isSym maxProcCount spinMem spinRuntime toolRuntime noOfLines
 
 
 
@@ -185,8 +193,8 @@ main = do
   stdoutLock <- Lock.new
 
   if tbl
-    then do putStrLn "\\textbf{Benchmark} & \\textbf{\\#Proc.} & \\textbf{\\spin(s)} & \\textbf{\\Tool(s)} & \\textbf{(LOC)} \\\\"
-            putStrLn "\\midrule"
+    then do -- putStrLn "\\textbf{Benchmark} & \\textbf{\\#Proc.} & \\textbf{\\spin(s)} & \\textbf{\\Tool(s)} & \\textbf{(LOC)} \\\\"
+            -- putStrLn "\\midrule"
             assert (length nameMapping == length spinResults) (return ())
             forM_ (zip nameMapping spinResults) printTableLine
     else do _ <- parallelInterleaved $
