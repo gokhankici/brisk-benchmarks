@@ -4,7 +4,7 @@
 
 import           Prelude hiding (FilePath)
 import           Turtle hiding (Row)
-import qualified Data.Text as T (pack, unpack, append, replace, dropWhileEnd)
+import qualified Data.Text as T (pack, unpack, append, replace, dropWhileEnd, lines)
 import           Filesystem.Path.CurrentOS (encodeString)
 import           System.Console.ANSI
 import           Control.Concurrent.ParallelIO.Global
@@ -14,6 +14,7 @@ import           Control.Exception
 import           Control.Monad
 import qualified Control.Foldl as L
 import qualified Text.Printf as P
+import System.Exit
 -- -----------------------------------------------------------------------------
 -- ARGUMENTS
 -- -----------------------------------------------------------------------------
@@ -30,32 +31,30 @@ plParser = switch  "prolog" 'p' "Emit prolog"
 tableParser :: Parser Bool
 tableParser = switch  "table" 't' "Print latex table"
 
-type Input = (FilePath, Text)
-
 parser :: Parser ([Input], Bool, Bool)
 parser = (,,) <$> (many $ (,) <$> bmkParser <*> binderParser)
               <*> plParser
               <*> tableParser
 
+type Input = (FilePath, Text)
 
 defaultArgs :: [Input]
-defaultArgs = [ ("src/MapReduce/Master.hs", "master")
-              , ("src/WorkSteal/Queue.hs", "queue")
-              , ("src/AsyncP/Master.hs", "master")
+defaultArgs = [ ("src/AsyncP/Master.hs", "master")
+              , ("src/ConcDB/Database.hs", "database")
+              , ("src/DistDB/Database.hs", "database")
+              , ("src/Firewall/Master.hs", "master")
+              , ("src/LockServer/Master.hs", "master")
+              , ("src/MapReduce/Master.hs", "master")
+              , ("src/MultiPing/Master.hs", "master")
+              , ("src/Parikh/Master.hs", "master")
               , ("src/PingDet/Master.hs", "master")
               , ("src/PingIter/Master.hs", "master")
               , ("src/PingSym/Master.hs", "master")
               , ("src/PingSym2/Master.hs", "master")
-              , ("src/MultiPing/Master.hs", "master")
-              , ("src/ConcDB/Database.hs", "database")
-              , ("src/DistDB/Database.hs", "database")
               , ("src/Registry/Master.hs", "master")
-              , ("src/Firewall/Master.hs", "master")
-              , ("src/Parikh/Master.hs", "master")
               , ("src/TwoBuyers/Master.hs", "master")
               , ("src/TwoPhaseCommit/TwoPhaseCommit.hs", "main")
-              -- , ("src/Auction/Master.hs", "master")
-              , ("src/LockServer/Master.hs", "master")
+              , ("src/WorkSteal/Queue.hs", "queue")
               ]
 
 nameMapping = [ ("AsyncP"         , "\\AsyncPing")
@@ -153,9 +152,12 @@ emitProlog lock fn n = do
 -- TABLE
 -- -----------------------------------------------------------------------------
 
-printTableLine :: ((FilePath, String), Spin) -> IO ()
-printTableLine ((name, latexCmd), spin) = do
+printTableLine :: (Input, (FilePath, String), Spin) -> IO ()
+printTableLine ((fn, binder), (name, latexCmd), spin) = do
+  let bmk = (encodeString $ dirname fn)
   assert (encodeString name == s_name spin) (return ())
+  assert (bmk == s_name spin) (return ())
+  
   let fldr = "src" </> name
   hsFiles <- fold (ls fldr) $ filter' (\f' -> maybe False (== "hs") (extension f'))
   noOfLines :: Int <- fold (cat $ map input hsFiles) countLines
@@ -171,14 +173,27 @@ printTableLine ((name, latexCmd), spin) = do
                   SpinRow{..}  -> P.printf "%.1g" (s_mem / 1000)
                   SpinFail{..} -> "-" :: String
                   Infty{..}    -> "-"
-  let (toolRuntime :: String) = "tbd"
+
+  (rc, out, _) <- procStrictWithErr
+                    "stack" [ "exec", "--"
+                            , "brisk"
+                            , "--file", fromPath fn
+                            , "--binder", binder
+                            ] empty
+  toolRuntime <- case rc of
+                   ExitSuccess -> do let rs = concatMap (match runtimeOutputParser) (T.lines out)
+                                     return (head rs)
+                   _           -> error "runtime test fail"
+
   let isSym = case spin of
                 Infty{..} -> "" :: String
                 _         -> "\\tck"
-  P.printf "%s & %s & %s & %s & %s & %s & %d \\\\\n"
-    latexCmd isSym maxProcCount spinMem spinRuntime toolRuntime noOfLines
 
+  P.printf "%s & %s & %d & %s & %s & %s & %d \\\\\n"
+    latexCmd isSym noOfLines maxProcCount spinMem spinRuntime toolRuntime
 
+runtimeOutputParser :: Pattern Int
+runtimeOutputParser = text "rewrite in:" *> spaces *> decimal <* text "ms"
 
 -- -----------------------------------------------------------------------------
 -- MAIN
@@ -187,21 +202,38 @@ printTableLine ((name, latexCmd), spin) = do
 main :: IO ()
 main = do
   (args,emitPl,tbl) <- options "Runs brisk benchmarks" parser
+
   let args' = case args of
                 [] -> defaultArgs
                 _  -> args
   stdoutLock <- Lock.new
 
-  if tbl
-    then do -- putStrLn "\\textbf{Benchmark} & \\textbf{\\#Proc.} & \\textbf{\\spin(s)} & \\textbf{\\Tool(s)} & \\textbf{(LOC)} \\\\"
-            -- putStrLn "\\midrule"
-            assert (length nameMapping == length spinResults) (return ())
-            forM_ (zip nameMapping spinResults) printTableLine
-    else do _ <- parallelInterleaved $
-              if emitPl
-              then [ emitProlog stdoutLock fn n | (fn,n) <- args' ]
-              else [ runBenchmark stdoutLock a | a <- args' ]
-            stopGlobalPool
+  when tbl $ do
+    assert (length nameMapping == length spinResults) (return ())
+    forM_ (zip3 defaultArgs nameMapping spinResults) printTableLine
+    exitSuccess
+
+  -- when runtime $ do
+  --   forM_ args' $ \(fn,n) -> do
+  --     let bmk = (encodeString $ dirname fn)
+  --     (rc, out, _) <- procStrictWithErr
+  --                       "stack" [ "exec", "--"
+  --                               , "brisk"
+  --                               , "--file", fromPath fn
+  --                               , "--binder", n
+  --                               ] empty
+  --     case rc of
+  --       ExitSuccess -> do let rs = concatMap (match runtimeOutputParser) (T.lines out)
+  --                         forM_ rs (\r -> P.printf "%-15s %g\n" bmk r)
+  --       _           -> error "runtime test fail"
+  --   exitSuccess
+
+  -- otherwise
+  do _ <- parallelInterleaved $
+            if emitPl
+            then [ emitProlog stdoutLock fn n | (fn,n) <- args' ]
+            else [ runBenchmark stdoutLock a | a <- args' ]
+     stopGlobalPool
 
 -- -----------------------------------------------------------------------------
 -- HELPER FUNCTIONS
