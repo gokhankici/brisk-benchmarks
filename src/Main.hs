@@ -85,8 +85,8 @@ nameMapping = [ ("AsyncP"         , "\\AsyncPing")
               , ("WorkSteal"      , "\\ws")
               ]
 
-negArgs = [ ("src/AsyncPWrongType/Master.hs", "master", "\\pingmultiErrA")
-          , ("src/AsyncPWithRace/Master.hs", "master", "\\pingmultiErrRace")
+negArgs = [ ("src/AsyncPWrongType/Master.hs", "master", "\\pingmultiWrongType")
+          , ("src/AsyncPWithRace/Master.hs", "master", "\\pingmultiWithRace")
           , ("src/MapReduceNoWork/Master.hs", "master", "\\mapreduceNoWork")
           , ("src/MapReduceNoTerm/Master.hs", "master", "\\mapreduceNoTerm")
           , ("src/MapReduceCF/Master.hs", "master", "\\mapreduceCF")
