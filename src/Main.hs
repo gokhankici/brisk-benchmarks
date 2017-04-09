@@ -29,12 +29,22 @@ plParser :: Parser Bool
 plParser = switch  "prolog" 'p' "Emit prolog"
 
 tableParser :: Parser Bool
-tableParser = switch  "table" 't' "Print latex table"
+tableParser = switch  "table" 't' "Print latex benchmarks table"
 
-parser :: Parser ([Input], Bool, Bool)
-parser = (,,) <$> (many $ (,) <$> bmkParser <*> binderParser)
-              <*> plParser
-              <*> tableParser
+negtableParser :: Parser Bool
+negtableParser = switch  "negtable" 'n' "Print latex negative bmks table"
+
+data Options = Options { inputs   :: [Input]
+                       , isPL     :: Bool
+                       , isTbl    :: Bool
+                       , isNegTbl :: Bool
+                       }
+
+parser :: Parser Options
+parser = Options <$> (many $ (,) <$> bmkParser <*> binderParser)
+                 <*> plParser
+                 <*> tableParser
+                 <*> negtableParser
 
 type Input = (FilePath, Text)
 
@@ -74,6 +84,17 @@ nameMapping = [ ("AsyncP"         , "\\AsyncPing")
               , ("TwoPhaseCommit" , "\\twophasecommit")
               , ("WorkSteal"      , "\\ws")
               ]
+
+negArgs = [ ("src/AsyncPWrongType/Master.hs", "master", "\\pingmultiErrA")
+          , ("src/AsyncPWithRace/Master.hs", "master", "\\pingmultiErrRace")
+          , ("src/MapReduceNoWork/Master.hs", "master", "\\mapreduceNoWork")
+          , ("src/MapReduceNoTerm/Master.hs", "master", "\\mapreduceNoTerm")
+          , ("src/MapReduceCF/Master.hs", "master", "\\mapreduceCF")
+          , ("src/MapReduceNoMaster/Master.hs", "master", "\\mapreduceNoMaster")
+          , ("src/MapReduceNoReduce/Master.hs", "master", "\\mapreduceNoReduce")
+          , ("src/FirewallWrongPid/Master.hs", "master", "\\firewallWrongPid")
+          , ("src/WorkStealCF/Queue.hs", "queue", "\\wsCF")
+          ]
 
 data Spin = SpinRow  { s_name  :: String     -- name
                      , s_minN  :: Int        -- min N to fail
@@ -159,8 +180,8 @@ printTableLine ((fn, binder), (name, latexCmd), spin) = do
   assert (bmk == s_name spin) (return ())
   
   let fldr = "src" </> name
-  hsFiles <- fold (ls fldr) $ filter' (\f' -> maybe False (== "hs") (extension f'))
-  noOfLines :: Int <- fold (cat $ map input hsFiles) countLines
+  noOfLines <- countHSLines fldr
+
   let maxProcCount = case spin of
                        SpinRow{..}  -> show s_minN
                        SpinFail{..} -> show s_minN
@@ -174,16 +195,10 @@ printTableLine ((fn, binder), (name, latexCmd), spin) = do
                   SpinFail{..} -> "-" :: String
                   Infty{..}    -> "-"
 
-  (rc, out, _) <- procStrictWithErr
-                    "stack" [ "exec", "--"
-                            , "brisk"
-                            , "--file", fromPath fn
-                            , "--binder", binder
-                            ] empty
-  toolRuntime <- case rc of
-                   ExitSuccess -> do let rs = concatMap (match runtimeOutputParser) (T.lines out)
-                                     return (head rs)
-                   _           -> error "runtime test fail"
+  (rc, toolRuntime) <- getToolRuntime fn binder
+  case rc of
+    ExitSuccess   -> return ()
+    ExitFailure _ -> putStrLn bmk >> fail "neg bmk failed"
 
   let isSym = case spin of
                 Infty{..} -> "" :: String
@@ -192,45 +207,66 @@ printTableLine ((fn, binder), (name, latexCmd), spin) = do
   P.printf "%s & %s & %d & %s & %s & %s & %d \\\\\n"
     latexCmd isSym noOfLines maxProcCount spinMem spinRuntime toolRuntime
 
+printNegTableLine :: (FilePath, Text, String) -> IO ()
+printNegTableLine (fn, binder, latexCmd) = do
+  let bmkName   = dirname fn
+      bmkFolder = parent fn
+
+  noOfLines <- countHSLines bmkFolder
+
+  (rc, toolRuntime) <- getToolRuntime fn binder
+
+  case rc of
+    ExitSuccess   -> putStrLn (encodeString bmkName) >> fail "neg bmk failed"
+    ExitFailure _ -> return ()
+    
+  P.printf "%s & %d & %d \\\\\n" latexCmd toolRuntime noOfLines
+
 runtimeOutputParser :: Pattern Int
 runtimeOutputParser = text "rewrite in:" *> spaces *> decimal <* text "ms"
 
+countHSLines :: FilePath -> IO Int
+countHSLines fn = do
+  hsFiles <- fold (ls fn) $ filter' (\f' -> maybe False (== "hs") (extension f'))
+  fold (cat $ map input hsFiles) countLines
+
+getToolRuntime :: FilePath -> Text -> IO (ExitCode, Int)
+getToolRuntime fn binder = do
+  (rc, out, _) <- procStrictWithErr
+                    "stack" [ "exec", "--"
+                            , "brisk"
+                            , "--file", fromPath fn
+                            , "--binder", binder
+                            ] empty
+  let rs = concatMap (match runtimeOutputParser) (T.lines out)
+  case rs of
+    []  -> putStrLn (encodeString $ dirname fn) >> fail "neg bmk failed"
+    h:_ -> return (rc,h)
+  
 -- -----------------------------------------------------------------------------
 -- MAIN
 -- -----------------------------------------------------------------------------
 
 main :: IO ()
 main = do
-  (args,emitPl,tbl) <- options "Runs brisk benchmarks" parser
+  Options{..} <- options "Runs brisk benchmarks" parser
 
-  let args' = case args of
+  let args' = case inputs of
                 [] -> defaultArgs
-                _  -> args
+                _  -> inputs
   stdoutLock <- Lock.new
 
-  when tbl $ do
+  when isTbl $ do
     assert (length nameMapping == length spinResults) (return ())
     forM_ (zip3 defaultArgs nameMapping spinResults) printTableLine
     exitSuccess
 
-  -- when runtime $ do
-  --   forM_ args' $ \(fn,n) -> do
-  --     let bmk = (encodeString $ dirname fn)
-  --     (rc, out, _) <- procStrictWithErr
-  --                       "stack" [ "exec", "--"
-  --                               , "brisk"
-  --                               , "--file", fromPath fn
-  --                               , "--binder", n
-  --                               ] empty
-  --     case rc of
-  --       ExitSuccess -> do let rs = concatMap (match runtimeOutputParser) (T.lines out)
-  --                         forM_ rs (\r -> P.printf "%-15s %g\n" bmk r)
-  --       _           -> error "runtime test fail"
-  --   exitSuccess
+  when isNegTbl $ do
+    forM_ negArgs printNegTableLine
+    exitSuccess
 
-  -- otherwise
   do _ <- parallelInterleaved $
-            if emitPl
+            if isPL
             then [ emitProlog stdoutLock fn n | (fn,n) <- args' ]
             else [ runBenchmark stdoutLock a | a <- args' ]
      stopGlobalPool
