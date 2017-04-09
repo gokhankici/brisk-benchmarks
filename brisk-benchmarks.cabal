@@ -70,14 +70,44 @@ library
                      , TwoBuyers.Buyer2
                      , TwoBuyers.Seller
                      , TwoBuyers.Master
-                     -- , Auction.Utils
-                     -- , Auction.Master
-                     -- , Auction.Buyer
-                     -- , Auction.Seller
                      , LockServer.Utils
                      , LockServer.Client
                      , LockServer.Server
                      , LockServer.Master
+
+                     -- negative benchmarks
+                     , MapReduceNoWork.Mapper
+                     , MapReduceNoWork.Master
+                     , MapReduceNoWork.Queue
+                     , MapReduceNoWork.Utils
+                     , MapReduceNoTerm.Mapper
+                     , MapReduceNoTerm.Master
+                     , MapReduceNoTerm.Queue
+                     , MapReduceNoTerm.Utils
+                     , MapReduceCF.Mapper
+                     , MapReduceCF.Master
+                     , MapReduceCF.Queue
+                     , MapReduceCF.Utils
+                     , MapReduceNoMaster.Mapper
+                     , MapReduceNoMaster.Master
+                     , MapReduceNoMaster.Queue
+                     , MapReduceNoMaster.Utils
+                     , MapReduceNoReduce.Mapper
+                     , MapReduceNoReduce.Master
+                     , MapReduceNoReduce.Queue
+                     , MapReduceNoReduce.Utils
+                     , AsyncPWrongType.PingServer
+                     , AsyncPWrongType.Master
+                     , AsyncPWithRace.PingServer
+                     , AsyncPWithRace.Master
+                     , FirewallWrongPid.Utils
+                     , FirewallWrongPid.Client
+                     , FirewallWrongPid.Server
+                     , FirewallWrongPid.Firewall
+                     , FirewallWrongPid.Master
+                     , WorkStealCF.Mapper
+                     , WorkStealCF.Queue
+                     , WorkStealCF.Utils
                      
   other-modules:       MapReduce.MapReduce
 
