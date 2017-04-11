@@ -2,9 +2,11 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+module Main where
+
 import           Prelude hiding (FilePath)
 import           Turtle hiding (Row)
-import qualified Data.Text as T (pack, unpack, append, replace, dropWhileEnd, lines)
+import qualified Data.Text as T
 import           Filesystem.Path.CurrentOS (encodeString)
 import           System.Console.ANSI
 import           Control.Concurrent.ParallelIO.Global
@@ -15,6 +17,9 @@ import           Control.Monad
 import qualified Control.Foldl as L
 import qualified Text.Printf as P
 import System.Exit
+import qualified Control.Foldl as F
+import Data.Char (isSpace)
+import Data.Maybe (isJust)
 -- -----------------------------------------------------------------------------
 -- ARGUMENTS
 -- -----------------------------------------------------------------------------
@@ -67,6 +72,7 @@ defaultArgs = [ ("src/AsyncP/Master.hs", "master")
               , ("src/WorkSteal/Queue.hs", "queue")
               ]
 
+nameMapping :: [(FilePath, String)]
 nameMapping = [ ("AsyncP"         , "\\AsyncPing")
               , ("ConcDB"         , "\\concdb")
               , ("DistDB"         , "\\distdb")
@@ -85,6 +91,7 @@ nameMapping = [ ("AsyncP"         , "\\AsyncPing")
               , ("WorkSteal"      , "\\ws")
               ]
 
+negArgs :: [(FilePath, Text, String)]
 negArgs = [ ("src/AsyncPWrongType/Master.hs", "master", "\\pingmultiWrongType")
           , ("src/AsyncPWithRace/Master.hs", "master", "\\pingmultiWithRace")
           , ("src/MapReduceNoWork/Master.hs", "master", "\\mapreduceNoWork")
@@ -101,10 +108,6 @@ data Spin = SpinRow  { s_name  :: String     -- name
                      , s_state :: Double     -- max # of states reached before failing
                      , s_mem   :: Double     -- memory used to store those states
                      , s_time  :: Double     -- timestamp before failure
-                     }
-          -- failed due to too many channels
-          | SpinFail { s_name :: String     -- name
-                     , s_minN :: Int        -- min N to fail
                      }
           -- able to check N > 100
           | Infty    { s_name :: String     -- name 
@@ -183,17 +186,14 @@ printTableLine ((fn, binder), (name, latexCmd), spin) = do
   noOfLines <- countHSLines fldr
 
   let maxProcCount = case spin of
-                       SpinRow{..}  -> show s_minN
-                       SpinFail{..} -> show s_minN
-                       Infty{..}    -> "-"
+                       SpinRow{..} -> show s_minN
+                       Infty{..}   -> "-" :: String
   let spinRuntime = case spin of
-                       SpinRow{..}  -> show s_time
-                       SpinFail{..} -> "-"
-                       Infty{..}    -> "-"
+                       SpinRow{..} -> show s_time
+                       Infty{..}   -> "-" :: String
   let spinMem = case spin of
-                  SpinRow{..}  -> P.printf "%.1g" (s_mem / 1000)
-                  SpinFail{..} -> "-" :: String
-                  Infty{..}    -> "-"
+                  SpinRow{..} -> P.printf "%.1g" (s_mem / 1000)
+                  Infty{..}   -> "-" :: String
 
   (rc, toolRuntime) <- getToolRuntime fn binder
   case rc of
@@ -228,7 +228,24 @@ runtimeOutputParser = text "rewrite in:" *> spaces *> decimal <* text "ms"
 countHSLines :: FilePath -> IO Int
 countHSLines fn = do
   hsFiles <- fold (ls fn) $ filter' (\f' -> maybe False (== "hs") (extension f'))
-  fold (cat $ map input hsFiles) countLines
+  let hslines = cat $ map input hsFiles
+  fold (isLine <$> hslines) F.sum
+  where
+    isLine :: Line -> Int
+    isLine l = let t       = lineToText l
+               in if isNonEmptyLine t && isNonOmittedLine t
+                  then 1
+                  else 0
+
+isNonOmittedLine :: Text -> Bool
+isNonOmittedLine t = let ll = T.breakOnAll <$> [ "import"
+                                               , "LANGUAGE"
+                                               , "module"
+                                               ] <*> [t]
+                     in foldr (\l b -> b && length l == 0) True ll
+
+isNonEmptyLine :: Text -> Bool
+isNonEmptyLine t = T.length t > 0 && isJust (T.findIndex (not . isSpace) t)
 
 getToolRuntime :: FilePath -> Text -> IO (ExitCode, Int)
 getToolRuntime fn binder = do
