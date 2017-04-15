@@ -12,7 +12,6 @@ import           System.Console.ANSI
 import           Control.Concurrent.ParallelIO.Global
 import           Control.Concurrent.Lock         ( Lock )
 import qualified Control.Concurrent.Lock as Lock ( new, with )
-import           Control.Exception
 import           Control.Monad
 import qualified Control.Foldl as L
 import qualified Text.Printf as P
@@ -54,41 +53,69 @@ parser = Options <$> (many $ (,) <$> bmkParser <*> binderParser)
 type Input = (FilePath, Text)
 
 defaultArgs :: [Input]
-defaultArgs = [ ("src/AsyncP/Master.hs", "master")
-              , ("src/ConcDB/Database.hs", "database")
-              , ("src/DistDB/Database.hs", "database")
-              , ("src/Firewall/Master.hs", "master")
-              , ("src/LockServer/Master.hs", "master")
-              , ("src/MapReduce/Master.hs", "master")
-              , ("src/MultiPing/Master.hs", "master")
-              , ("src/Parikh/Master.hs", "master")
-              , ("src/PingDet/Master.hs", "master")
-              , ("src/PingIter/Master.hs", "master")
-              , ("src/PingSym/Master.hs", "master")
-              , ("src/PingSym2/Master.hs", "master")
-              , ("src/Registry/Master.hs", "master")
-              , ("src/TwoBuyers/Master.hs", "master")
-              , ("src/TwoPhaseCommit/TwoPhaseCommit.hs", "main")
-              , ("src/WorkSteal/Queue.hs", "queue")
+defaultArgs = [ ("src/MultiPing/Master.hs"              , "master")
+              , ("src/AsyncP/Master.hs"                 , "master")
+              , ("src/PingDet/Master.hs"                , "master")
+              , ("src/PingIter/Master.hs"               , "master")
+              , ("src/PingSym/Master.hs"                , "master")
+              , ("src/PingSym2/Master.hs"               , "master")
+              , ("src/ConcDB/Database.hs"               , "database")
+              , ("src/DistDB/Database.hs"               , "database")
+              , ("src/Firewall/Master.hs"               , "master")
+              , ("src/LockServer/Master.hs"             , "master")
+              , ("src/MapReduce/Master.hs"              , "master")
+              , ("src/Parikh/Master.hs"                 , "master")
+              , ("src/Registry/Master.hs"               , "master")
+              , ("src/TwoBuyers/Master.hs"              , "master")
+              , ("src/TwoPhaseCommit/TwoPhaseCommit.hs" , "main")
+              , ("src/WorkSteal/Queue.hs"               , "queue")
               ]
 
-nameMapping :: [(FilePath, String)]
-nameMapping = [ ("AsyncP"         , "\\AsyncPing")
-              , ("ConcDB"         , "\\concdb")
-              , ("DistDB"         , "\\distdb")
-              , ("Firewall"       , "\\firewall")
-              , ("LockServer"     , "\\lockserver")
-              , ("MapReduce"      , "\\mapreduce")
-              , ("MultiPing"      , "\\MultiPing")
-              , ("Parikh"         , "\\parikh")
-              , ("PingDet"        , "\\PingDet")
-              , ("PingIter"       , "\\PingIter")
-              , ("PingSym"        , "\\PingSym")
-              , ("PingSym2"       , "\\PingSymTwo")
-              , ("Registry"       , "\\registry")
-              , ("TwoBuyers"      , "\\twobuyers")
-              , ("TwoPhaseCommit" , "\\twophasecommit")
-              , ("WorkSteal"      , "\\ws")
+nameMapping :: [(FilePath, Int, String)]
+nameMapping = [ ("MultiPing"      , 1, "\\MultiPing")
+              , ("AsyncP"         , 1, "\\AsyncPing")
+              , ("PingDet"        , 1, "\\PingDet")
+              , ("PingIter"       , 1, "\\PingIter")
+              , ("PingSym"        , 1, "\\PingSym")
+              , ("PingSym2"       , 1, "\\PingSymTwo")
+              , ("ConcDB"         , 1, "\\concdb")
+              , ("DistDB"         , 2, "\\distdb")
+              , ("Firewall"       , 1, "\\firewall")
+              , ("LockServer"     , 1, "\\lockserver")
+              , ("MapReduce"      , 2, "\\mapreduce")
+              , ("Parikh"         , 0, "\\parikh")
+              , ("Registry"       , 1, "\\registry")
+              , ("TwoBuyers"      , 0, "\\twobuyers")
+              , ("TwoPhaseCommit" , 1, "\\twophasecommit")
+              , ("WorkSteal"      , 2, "\\ws")
+              ]
+data Spin = SpinRow  { s_name  :: String     -- name
+                     , s_minN  :: Int        -- min N to fail
+                     , s_state :: Double     -- max # of states reached before failing
+                     , s_mem   :: Double     -- memory used to store those states
+                     , s_time  :: Double     -- timestamp before failure
+                     }
+          -- able to check N > 100
+          | Infty    { s_name :: String     -- name 
+                     }
+
+spinResults :: [Spin]
+spinResults = [ (Infty "MultiPing")
+              , (SpinRow "AsyncP" 11 1.6e7 4974.259 56.6)
+              , (SpinRow "PingDet" 13 1.0e7 3757.267 56.3)
+              , (SpinRow "PingIter" 11 1.5e7 4671.134 55.2)
+              , (SpinRow "PingSym" 10 1.6e7 4108.438 55.1)
+              , (SpinRow "PingSym2" 7 2.4e7 6343.888 58.5)
+              , (SpinRow "ConcDB" 6 1.0e7 7512.058 52.6)
+              , (SpinRow "DistDB" 2 2.1e7 7673.966 46.2)
+              , (SpinRow "Firewall" 9 1.7e7 5140.47 55.6)
+              , (SpinRow "LockServer" 12 1.5e7 4828.458 55.8)
+              , (SpinRow "MapReduce" 4 2.1e7 7507.657 44.8)
+              , (Infty "Parikh")
+              , (SpinRow "Registry" 10 2.2e7 7570.157 53.0)
+              , (Infty "TwoBuyers")
+              , (SpinRow "TwoPhaseCommit" 6 1.8e7 7679.923 40.0)
+              , (SpinRow "WorkSteal" 5 2.5e7 7700.724 44.9)
               ]
 
 negArgs :: [(FilePath, Text, String)]
@@ -103,34 +130,6 @@ negArgs = [ ("src/AsyncPWrongType/Master.hs", "master", "\\pingmultiWrongType")
           , ("src/WorkStealCF/Queue.hs", "queue", "\\wsCF")
           ]
 
-data Spin = SpinRow  { s_name  :: String     -- name
-                     , s_minN  :: Int        -- min N to fail
-                     , s_state :: Double     -- max # of states reached before failing
-                     , s_mem   :: Double     -- memory used to store those states
-                     , s_time  :: Double     -- timestamp before failure
-                     }
-          -- able to check N > 100
-          | Infty    { s_name :: String     -- name 
-                     }
-
-spinResults :: [Spin]
-spinResults = [ (SpinRow "AsyncP" 11 1.6e7 4974.259 56.6)
-              , (SpinRow "ConcDB" 6 1.0e7 7512.058 52.6)
-              , (SpinRow "DistDB" 2 2.1e7 7673.966 46.2)
-              , (SpinRow "Firewall" 9 1.7e7 5140.47 55.6)
-              , (SpinRow "LockServer" 12 1.5e7 4828.458 55.8)
-              , (SpinRow "MapReduce" 4 2.1e7 7507.657 44.8)
-              , (Infty "MultiPing")
-              , (Infty "Parikh")
-              , (SpinRow "PingDet" 13 1.0e7 3757.267 56.3)
-              , (SpinRow "PingIter" 11 1.5e7 4671.134 55.2)
-              , (SpinRow "PingSym" 10 1.6e7 4108.438 55.1)
-              , (SpinRow "PingSym2" 7 2.4e7 6343.888 58.5)
-              , (SpinRow "Registry" 10 2.2e7 7570.157 53.0)
-              , (Infty "TwoBuyers")
-              , (SpinRow "TwoPhaseCommit" 6 1.8e7 7679.923 40.0)
-              , (SpinRow "WorkSteal" 5 2.5e7 7700.724 44.9)
-              ]
 
 -- -----------------------------------------------------------------------------
 -- TESTING
@@ -176,11 +175,11 @@ emitProlog lock fn n = do
 -- TABLE
 -- -----------------------------------------------------------------------------
 
-printTableLine :: (Input, (FilePath, String), Spin) -> IO ()
-printTableLine ((fn, binder), (name, latexCmd), spin) = do
+printTableLine :: (Input, (FilePath, Int, String), Spin) -> IO ()
+printTableLine ((fn, binder), (name, paramCount, latexCmd), spin) = do
   let bmk = (encodeString $ dirname fn)
-  assert (encodeString name == s_name spin) (return ())
-  assert (bmk == s_name spin) (return ())
+  assert (encodeString name == s_name spin) "name mismatch"
+  assert (bmk == s_name spin) "name mismatch 2"
   
   let fldr = "src" </> name
   noOfLines <- countHSLines fldr
@@ -188,24 +187,15 @@ printTableLine ((fn, binder), (name, latexCmd), spin) = do
   let maxProcCount = case spin of
                        SpinRow{..} -> show s_minN
                        Infty{..}   -> "-" :: String
-  let spinRuntime = case spin of
-                       SpinRow{..} -> show s_time
-                       Infty{..}   -> "-" :: String
-  let spinMem = case spin of
-                  SpinRow{..} -> P.printf "%.1g" (s_mem / 1000)
-                  Infty{..}   -> "-" :: String
-
   (rc, toolRuntime) <- getToolRuntime fn binder
   case rc of
     ExitSuccess   -> return ()
-    ExitFailure _ -> putStrLn bmk >> fail "neg bmk failed"
+    ExitFailure _ -> putStrLn bmk >> fail "bmk failed"
 
-  let isSym = case spin of
-                Infty{..} -> "" :: String
-                _         -> "\\tck"
+  plLines <- countPLLines fn binder
 
-  P.printf "%s & %s & %d & %s & %s & %s & %d \\\\\n"
-    latexCmd isSym noOfLines maxProcCount spinMem spinRuntime toolRuntime
+  P.printf "%-20s & %d & %2d & %3d & %2s & %3d \\\\\n"
+    latexCmd paramCount noOfLines plLines maxProcCount toolRuntime
 
 printNegTableLine :: (FilePath, Text, String) -> IO ()
 printNegTableLine (fn, binder, latexCmd) = do
@@ -257,9 +247,44 @@ getToolRuntime fn binder = do
                             ] empty
   let rs = concatMap (match runtimeOutputParser) (T.lines out)
   case rs of
-    []  -> putStrLn (encodeString $ dirname fn) >> fail "neg bmk failed"
+    []  -> putStrLn (encodeString $ dirname fn) >> fail "tool runtime failed"
     h:_ -> return (rc,h)
-  
+
+
+countPLLines :: FilePath -> Text -> IO Int
+countPLLines fn n = do
+  let queryFile = "query.pl"
+  (_, _, _) <- procStrictWithErr
+                 "stack" [ "exec", "--"
+                         , "brisk"
+                         , "--file", fromPath fn
+                         , "--binder", n
+                         , "--query", fromPath queryFile
+                         ] empty
+  qfExists <- testfile queryFile
+  when (not qfExists) (fail "query.pl doesn't exist")
+
+  (rc, out, err) <- procStrictWithErr
+                   "sicstus" [ "--noinfo", "--nologo"
+                             , "-l", fromPath queryFile
+                             , "--goal", "use_module(library(terms)), rewrite_query(T,_), term_size(T,N), format('~d~n', N), halt."
+                             ] empty
+  rm queryFile
+
+  case rc of
+    ExitFailure _ -> fail "sicstus failed"
+    _             -> return ()
+
+  let rs = concatMap (match decimal) (T.lines out)
+  case rs of
+    []  -> do putStrLn (encodeString $ dirname fn)
+              putStrLn (T.unpack out)
+              putStrLn "-------------------"
+              putStrLn (T.unpack err)
+              putStrLn "-------------------"
+              fail "sicstus output match failed"
+    h:_ -> return h
+
 -- -----------------------------------------------------------------------------
 -- MAIN
 -- -----------------------------------------------------------------------------
@@ -274,7 +299,8 @@ main = do
   stdoutLock <- Lock.new
 
   when isTbl $ do
-    assert (length nameMapping == length spinResults) (return ())
+    assert (length defaultArgs == length nameMapping &&
+            length nameMapping == length spinResults) "length mismatch"
     forM_ (zip3 defaultArgs nameMapping spinResults) printTableLine
     exitSuccess
 
@@ -336,3 +362,6 @@ mergeOutputs = fmap (either id id)
 
 filter' :: (a -> Bool) -> Fold a [a]
 filter' p = L.foldMap (\a -> if p a then [a] else []) id
+
+assert :: Bool -> String -> IO ()
+assert pred msg = when (not pred) (fail "msg")
