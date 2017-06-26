@@ -15,7 +15,6 @@ import qualified Control.Concurrent.Lock as Lock ( new, with )
 import           Control.Monad
 import qualified Control.Foldl as L
 import qualified Text.Printf as P
-import System.Exit
 import qualified Control.Foldl as F
 import Data.Char (isSpace)
 import Data.Maybe (isJust)
@@ -29,26 +28,10 @@ bmkParser = optPath "file" 'f' "Name of the benchmark file"
 binderParser :: Parser Text
 binderParser = optText "binder" 'b' "Name of the binder"
 
-plParser :: Parser Bool
-plParser = switch  "prolog" 'p' "Emit prolog"
-
-tableParser :: Parser Bool
-tableParser = switch  "table" 't' "Print latex benchmarks table"
-
-negtableParser :: Parser Bool
-negtableParser = switch  "negtable" 'n' "Print latex negative bmks table"
-
-data Options = Options { inputs   :: [Input]
-                       , isPL     :: Bool
-                       , isTbl    :: Bool
-                       , isNegTbl :: Bool
-                       }
+data Options = Options { inputs :: [Input] }
 
 parser :: Parser Options
 parser = Options <$> (many $ (,) <$> bmkParser <*> binderParser)
-                 <*> plParser
-                 <*> tableParser
-                 <*> negtableParser
 
 type Input = (FilePath, Text)
 
@@ -71,63 +54,16 @@ defaultArgs = [ ("src/MultiPing/Master.hs"              , "master")
               , ("src/WorkSteal/Queue.hs"               , "queue")
               ]
 
-nameMapping :: [(FilePath, Int, String)]
-nameMapping = [ ("MultiPing"      , 1, "\\MultiPing")
-              , ("AsyncP"         , 1, "\\AsyncPing")
-              , ("PingDet"        , 1, "\\PingDet")
-              , ("PingIter"       , 1, "\\PingIter")
-              , ("PingSym"        , 1, "\\PingSym")
-              , ("PingSym2"       , 1, "\\PingSymTwo")
-              , ("ConcDB"         , 1, "\\concdb")
-              , ("DistDB"         , 2, "\\distdb")
-              , ("Firewall"       , 1, "\\firewall")
-              , ("LockServer"     , 1, "\\lockserver")
-              , ("MapReduce"      , 2, "\\mapreduce")
-              , ("Parikh"         , 0, "\\parikh")
-              , ("Registry"       , 1, "\\registry")
-              , ("TwoBuyers"      , 0, "\\twobuyers")
-              , ("TwoPhaseCommit" , 1, "\\twophasecommit")
-              , ("WorkSteal"      , 2, "\\ws")
-              ]
-data Spin = SpinRow  { s_name  :: String     -- name
-                     , s_minN  :: Int        -- min N to fail
-                     , s_state :: Double     -- max # of states reached before failing
-                     , s_mem   :: Double     -- memory used to store those states
-                     , s_time  :: Double     -- timestamp before failure
-                     }
-          -- able to check N > 100
-          | Infty    { s_name :: String     -- name 
-                     }
-
-spinResults :: [Spin]
-spinResults = [ (Infty "MultiPing")
-              , (SpinRow "AsyncP" 11 1.6e7 4974.259 56.6)
-              , (SpinRow "PingDet" 13 1.0e7 3757.267 56.3)
-              , (SpinRow "PingIter" 11 1.5e7 4671.134 55.2)
-              , (SpinRow "PingSym" 10 1.6e7 4108.438 55.1)
-              , (SpinRow "PingSym2" 7 2.4e7 6343.888 58.5)
-              , (SpinRow "ConcDB" 6 1.0e7 7512.058 52.6)
-              , (SpinRow "DistDB" 2 2.1e7 7673.966 46.2)
-              , (SpinRow "Firewall" 9 1.7e7 5140.47 55.6)
-              , (SpinRow "LockServer" 12 1.5e7 4828.458 55.8)
-              , (SpinRow "MapReduce" 4 2.1e7 7507.657 44.8)
-              , (Infty "Parikh")
-              , (SpinRow "Registry" 10 2.2e7 7570.157 53.0)
-              , (Infty "TwoBuyers")
-              , (SpinRow "TwoPhaseCommit" 6 1.8e7 7679.923 40.0)
-              , (SpinRow "WorkSteal" 5 2.5e7 7700.724 44.9)
-              ]
-
-negArgs :: [(FilePath, Text, String)]
-negArgs = [ ("src/AsyncPWrongType/Master.hs", "master", "\\pingmultiWrongType")
-          , ("src/AsyncPWithRace/Master.hs", "master", "\\pingmultiWithRace")
-          , ("src/MapReduceNoWork/Master.hs", "master", "\\mapreduceNoWork")
-          , ("src/MapReduceNoTerm/Master.hs", "master", "\\mapreduceNoTerm")
-          , ("src/MapReduceCF/Master.hs", "master", "\\mapreduceCF")
-          , ("src/MapReduceNoMaster/Master.hs", "master", "\\mapreduceNoMaster")
-          , ("src/MapReduceNoReduce/Master.hs", "master", "\\mapreduceNoReduce")
-          , ("src/FirewallWrongPid/Master.hs", "master", "\\firewallWrongPid")
-          , ("src/WorkStealCF/Queue.hs", "queue", "\\wsCF")
+negArgs :: [Input]
+negArgs = [ ("src/AsyncPWrongType/Master.hs"   , "master")
+          , ("src/AsyncPWithRace/Master.hs"    , "master")
+          , ("src/MapReduceNoWork/Master.hs"   , "master")
+          , ("src/MapReduceNoTerm/Master.hs"   , "master")
+          , ("src/MapReduceCF/Master.hs"       , "master")
+          , ("src/MapReduceNoMaster/Master.hs" , "master")
+          , ("src/MapReduceNoReduce/Master.hs" , "master")
+          , ("src/FirewallWrongPid/Master.hs"  , "master")
+          , ("src/WorkStealCF/Queue.hs"        , "queue")
           ]
 
 
@@ -136,66 +72,48 @@ negArgs = [ ("src/AsyncPWrongType/Master.hs", "master", "\\pingmultiWrongType")
 -- -----------------------------------------------------------------------------
 
 runBenchmark :: Lock -> Input -> IO ()
-runBenchmark lock (fn,n) = do
-  (rc, out, _) <- procStrictWithErr
-                    "stack" [ "exec", "--"
-                            , "brisk"
-                            , "--file", fromPath fn
-                            , "--binder", n
-                            ] empty
+runBenchmark lock (fn, binder) = do
+  (rc, toolRuntime) <- getToolRuntime fn binder
 
   case rc of
     ExitSuccess   -> Lock.with lock $
-                     success $ "[SUCCESS] " <++> fromPath (dirname fn) <++> " - " <++> n
+      success $ "[SUCCESS] " <++> resultToStr fn toolRuntime
     ExitFailure _ -> Lock.with lock $ do
-      failure $ "[ERROR]   " <++> fromPath (dirname fn) <++> " - " <++> n
-      normal $ T.dropWhileEnd (== '\n') $ T.replace "\x1b[1;31m" "" out
+      failure $ "[ERROR]   " <++> resultToStr fn toolRuntime
   return ()
 
-emitProlog :: Lock -> FilePath -> Text -> IO ()
-emitProlog lock fn n = do
-  (rc, out, _) <- procStrictWithErr
-                    "stack" [ "ghc", "--"
-                            , "-fforce-recomp"
-                            , "--make", "-i./src"
-                            , "-fplugin", "Brisk.Plugin"
-                            , "-fplugin-opt", "Brisk.Plugin:" <++> n
-                            , fromPath fn
-                            ] empty
-  case rc of
-    ExitSuccess   -> Lock.with lock $ do
-      info $ "[PROLOG] " <++> fromPath (dirname fn) <++> " - " <++> n
-      normal out
-    ExitFailure _ -> Lock.with lock $ do
-      failure $ "[ERROR]  " <++> fromPath (dirname fn) <++> " - " <++> n
-      normal out
-  return ()
+resultToStr     :: FilePath -> Int -> Text
+resultToStr fn t = T.pack $ P.printf "%-20s   %4d ms" (encodeString (dirname fn)) t
 
 -- -----------------------------------------------------------------------------
--- TABLE
+-- MAIN
 -- -----------------------------------------------------------------------------
 
-printTableLine :: (Input, (FilePath, Int, String), Spin) -> IO ()
-printTableLine ((fn, binder), (name, paramCount, latexCmd), spin) = do
-  let bmk = (encodeString $ dirname fn)
-  assert (encodeString name == s_name spin) "name mismatch"
-  assert (bmk == s_name spin) "name mismatch 2"
-  
-  let fldr = "src" </> name
-  noOfLines <- countHSLines fldr
+main :: IO ()
+main = do
+  Options{..} <- options "Runs brisk benchmarks" parser
 
-  let maxProcCount = case spin of
-                       SpinRow{..} -> show s_minN
-                       Infty{..}   -> "-" :: String
-  (rc, toolRuntime) <- getToolRuntime fn binder
-  case rc of
-    ExitSuccess   -> return ()
-    ExitFailure _ -> putStrLn bmk >> fail "bmk failed"
+  stdoutLock <- Lock.new
 
-  plLines <- countPLLines fn binder
+  let hd1 = "Benchmark Name" :: String
+      hd2 = "Rewrite" :: String
 
-  P.printf "%-20s & %d & %2d & %3d & %2s & %3d \\\\\n"
-    latexCmd paramCount noOfLines plLines maxProcCount toolRuntime
+  case inputs of
+    [] -> do P.printf "---- Positive Benchmarks ---------------\n"
+             P.printf "          %-20s   %-7s\n" hd1 hd2
+             P.printf "----------------------------------------\n"
+             forM_ defaultArgs (runBenchmark stdoutLock)
+             P.printf "\n---- Negative Benchmarks ---------------\n"
+             P.printf "          %-20s   %-7s\n" hd1 hd2
+             P.printf "----------------------------------------\n"
+             forM_ negArgs     (runBenchmark stdoutLock)
+    _  -> forM_ inputs (runBenchmark stdoutLock) 
+
+  stopGlobalPool
+
+-- -----------------------------------------------------------------------------
+-- HELPER FUNCTIONS
+-- -----------------------------------------------------------------------------
 
 printNegTableLine :: (FilePath, Text, String) -> IO ()
 printNegTableLine (fn, binder, latexCmd) = do
@@ -249,74 +167,7 @@ getToolRuntime fn binder = do
   case rs of
     []  -> putStrLn (encodeString $ dirname fn) >> fail "tool runtime failed"
     h:_ -> return (rc,h)
-
-
-countPLLines :: FilePath -> Text -> IO Int
-countPLLines fn n = do
-  let queryFile = "query.pl"
-  (_, _, _) <- procStrictWithErr
-                 "stack" [ "exec", "--"
-                         , "brisk"
-                         , "--file", fromPath fn
-                         , "--binder", n
-                         , "--query", fromPath queryFile
-                         ] empty
-  qfExists <- testfile queryFile
-  when (not qfExists) (fail "query.pl doesn't exist")
-
-  (rc, out, err) <- procStrictWithErr
-                   "sicstus" [ "--noinfo", "--nologo"
-                             , "-l", fromPath queryFile
-                             , "--goal", "use_module(library(terms)), rewrite_query(T,_), term_size(T,N), format('~d~n', N), halt."
-                             ] empty
-  rm queryFile
-
-  case rc of
-    ExitFailure _ -> fail "sicstus failed"
-    _             -> return ()
-
-  let rs = concatMap (match decimal) (T.lines out)
-  case rs of
-    []  -> do putStrLn (encodeString $ dirname fn)
-              putStrLn (T.unpack out)
-              putStrLn "-------------------"
-              putStrLn (T.unpack err)
-              putStrLn "-------------------"
-              fail "sicstus output match failed"
-    h:_ -> return h
-
--- -----------------------------------------------------------------------------
--- MAIN
--- -----------------------------------------------------------------------------
-
-main :: IO ()
-main = do
-  Options{..} <- options "Runs brisk benchmarks" parser
-
-  let args' = case inputs of
-                [] -> defaultArgs
-                _  -> inputs
-  stdoutLock <- Lock.new
-
-  when isTbl $ do
-    assert (length defaultArgs == length nameMapping &&
-            length nameMapping == length spinResults) "length mismatch"
-    forM_ (zip3 defaultArgs nameMapping spinResults) printTableLine
-    exitSuccess
-
-  when isNegTbl $ do
-    forM_ negArgs printNegTableLine
-    exitSuccess
-
-  do _ <- parallelInterleaved $
-            if isPL
-            then [ emitProlog stdoutLock fn n | (fn,n) <- args' ]
-            else [ runBenchmark stdoutLock a | a <- args' ]
-     stopGlobalPool
-
--- -----------------------------------------------------------------------------
--- HELPER FUNCTIONS
--- -----------------------------------------------------------------------------
+ 
 
 (<++>) :: Text -> Text -> Text
 (<++>) = T.append
@@ -363,5 +214,3 @@ mergeOutputs = fmap (either id id)
 filter' :: (a -> Bool) -> Fold a [a]
 filter' p = L.foldMap (\a -> if p a then [a] else []) id
 
-assert :: Bool -> String -> IO ()
-assert pred msg = when (not pred) (fail "msg")
