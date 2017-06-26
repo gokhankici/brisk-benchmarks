@@ -73,17 +73,19 @@ negArgs = [ ("src/AsyncPWrongType/Master.hs"   , "master")
 
 runBenchmark :: Lock -> Input -> IO ()
 runBenchmark lock (fn, binder) = do
-  (rc, toolRuntime) <- getToolRuntime fn binder
+  (rc, rewrite, real) <- getToolRuntime fn binder
 
   case rc of
     ExitSuccess   -> Lock.with lock $
-      success $ "[SUCCESS] " <++> resultToStr fn toolRuntime
+      success $ "[SUCCESS] " <++> resultToStr fn rewrite real
     ExitFailure _ -> Lock.with lock $ do
-      failure $ "[ERROR]   " <++> resultToStr fn toolRuntime
+      failure $ "[ERROR]   " <++> resultToStr fn rewrite real
   return ()
 
-resultToStr     :: FilePath -> Int -> Text
-resultToStr fn t = T.pack $ P.printf "%-20s   %4d ms" (encodeString (dirname fn)) t
+resultToStr :: FilePath -> Int -> Double -> Text
+resultToStr fn t1 t2 =
+  let t2' :: Int = (round (t2 * 10)) * 100 in
+  T.pack $ P.printf "%-20s   %4d ms   %4d ms" (encodeString (dirname fn)) t1 t2'
 
 -- -----------------------------------------------------------------------------
 -- MAIN
@@ -97,15 +99,16 @@ main = do
 
   let hd1 = "Benchmark Name" :: String
       hd2 = "Rewrite" :: String
+      hd3 = "Total" :: String
 
   case inputs of
-    [] -> do P.printf "---- Positive Benchmarks ---------------\n"
-             P.printf "          %-20s   %-7s\n" hd1 hd2
-             P.printf "----------------------------------------\n"
+    [] -> do P.printf "---- Positive Benchmarks -------------------------\n"
+             P.printf "          %-20s   %-7s   %-7s\n" hd1 hd2 hd3
+             P.printf "--------------------------------------------------\n"
              forM_ defaultArgs (runBenchmark stdoutLock)
-             P.printf "\n---- Negative Benchmarks ---------------\n"
-             P.printf "          %-20s   %-7s\n" hd1 hd2
-             P.printf "----------------------------------------\n"
+             P.printf "\n---- Negative Benchmarks -------------------------\n"
+             P.printf "          %-20s   %-7s   %-7s\n" hd1 hd2 hd3
+             P.printf "--------------------------------------------------\n"
              forM_ negArgs     (runBenchmark stdoutLock)
     _  -> forM_ inputs (runBenchmark stdoutLock) 
 
@@ -114,21 +117,6 @@ main = do
 -- -----------------------------------------------------------------------------
 -- HELPER FUNCTIONS
 -- -----------------------------------------------------------------------------
-
-printNegTableLine :: (FilePath, Text, String) -> IO ()
-printNegTableLine (fn, binder, latexCmd) = do
-  let bmkName   = dirname fn
-      bmkFolder = parent fn
-
-  noOfLines <- countHSLines bmkFolder
-
-  (rc, toolRuntime) <- getToolRuntime fn binder
-
-  case rc of
-    ExitSuccess   -> putStrLn (encodeString bmkName) >> fail "neg bmk failed"
-    ExitFailure _ -> return ()
-    
-  P.printf "%s & %d & %d \\\\\n" latexCmd toolRuntime noOfLines
 
 runtimeOutputParser :: Pattern Int
 runtimeOutputParser = text "rewrite in:" *> spaces *> decimal <* text "ms"
@@ -155,18 +143,19 @@ isNonOmittedLine t = let ll = T.breakOnAll <$> [ "import"
 isNonEmptyLine :: Text -> Bool
 isNonEmptyLine t = T.length t > 0 && isJust (T.findIndex (not . isSpace) t)
 
-getToolRuntime :: FilePath -> Text -> IO (ExitCode, Int)
+getToolRuntime :: FilePath -> Text -> IO (ExitCode, Int, Double)
 getToolRuntime fn binder = do
-  (rc, out, _) <- procStrictWithErr
-                    "stack" [ "exec", "--"
-                            , "brisk"
-                            , "--file", fromPath fn
-                            , "--binder", binder
-                            ] empty
+  ((rc, out, _), tdiff) <- time $ procStrictWithErr
+                             "stack" [ "exec", "--"
+                                     , "brisk"
+                                     , "--file", fromPath fn
+                                     , "--binder", binder
+                                     ] empty
+
   let rs = concatMap (match runtimeOutputParser) (T.lines out)
   case rs of
     []  -> putStrLn (encodeString $ dirname fn) >> fail "tool runtime failed"
-    h:_ -> return (rc,h)
+    h:_ -> return (rc,h, realToFrac tdiff)
  
 
 (<++>) :: Text -> Text -> Text
