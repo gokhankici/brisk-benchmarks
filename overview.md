@@ -34,6 +34,7 @@ to be ignored, explain which ones they are.
 
 #  Getting Started Guide
 
+| --- | --- |
 | VM player               | VirtualBox 5.1.22 |
 | VM player download link | https://www.virtualbox.org/wiki/Linux_Downloads |
 | VM username             | paper34 |
