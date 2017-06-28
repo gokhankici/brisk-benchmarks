@@ -73,12 +73,14 @@ If you want to run an individual benchmark you can do the following:
    `cd` into `~/Desktop/artifact/brisk-benchmarks`.
 2. Run `stack exec -- brisk --file <file path> --binder <function name>`.
 
-Each benchmark is split into different modules that contain the specification of
-each symmetric processes. In general, a master process will initialize the
-system by spawning the rest of the processes. The file that contains the master
-process, and the specific function that handles it is specified when `brisk` is
-run. To see the list of file and function name pairs that `test` script uses,
-please take a look at `brisk-benchmarks/src/Main.hs` starting at line 39.
+Each folder in `~/Desktop/artifact/brisk-benchmarks/src` contains a single
+benchmark, and each benchmark in is split into different modules that contain
+the specification of each symmetric processes. Generally, a master process will
+initialize the system by spawning the rest of the processes. The file that
+contains the master process, and the specific function that handles it is
+specified when `brisk` is run. To see the list of file and function name pairs
+that `test` script uses, please take a look at `brisk-benchmarks/src/Main.hs`
+starting at line 39.
 
 For example, if you want to run `ConcDB` only, you can do the following:
 
@@ -106,7 +108,7 @@ The output will contain:
 
 # Step-by-Step Instructions
 
-Our artifact contains 3 folders inside `~/Desktop/artifact/`:
+Our artifact contains 4 folders inside `~/Desktop/artifact/`:
 
 ## brisk-prelude
 
@@ -116,8 +118,12 @@ Our artifact contains 3 folders inside `~/Desktop/artifact/`:
 
 ...
 
+## thequefs
+
+...
+
 ## brisk-benchmarks
 
-This folder contains the benchmarks we have used to evaluate our tool. Each
-folder in `brisk-benchmarks/src` contains a single benchmark.
+This folder simply contains the benchmarks we have used to evaluate our tool.
+Each folder in `brisk-benchmarks/src` contains a single benchmark.
 
