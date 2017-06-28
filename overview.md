@@ -100,6 +100,10 @@ The output will contain:
 - Runtime of the rewrite
 - Sequentialized version of the program (in Sicstus)
 
+## ThequeFS
+
+...
+
 # Step-by-Step Instructions
 
 Our artifact contains 3 folders inside `~/Desktop/artifact/`:
