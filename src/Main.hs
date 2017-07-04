@@ -87,6 +87,29 @@ resultToStr fn t1 t2 =
   let t2' :: Int = (round (t2 * 10)) * 100 in
   T.pack $ P.printf "%-20s   %4d ms   %4d ms" (encodeString (dirname fn)) t1 t2'
 
+runThequeFs :: Lock -> IO ()
+runThequeFs lock = do
+  ((rc, out, _), tdiff) <- time $ runInDirectory "/home/paper34/Desktop/artifact/thequefs" $ procStrictWithErr
+                             "stack" [ "exec", "--"
+                                     , "brisk"
+                                     , "--file", "app/Scenario.hs"
+                                     , "--binder", "main"
+                                     ] empty
+  let fn        = "../ThequeFS/app"
+      rewrite:_ = concatMap (match runtimeOutputParser) (T.lines out)
+      real      = realToFrac tdiff
+      
+  case rc of
+    ExitSuccess   -> Lock.with lock $
+      success $ "[SUCCESS] " <++> resultToStr fn rewrite real
+    ExitFailure _ -> Lock.with lock $ do
+      failure $ "[ERROR]   " <++> resultToStr fn rewrite real
+
+  return ()
+
+runInDirectory :: FilePath -> IO a -> IO a
+runInDirectory f io = with (pushd f) $ \_ -> io
+
 -- -----------------------------------------------------------------------------
 -- MAIN
 -- -----------------------------------------------------------------------------
@@ -106,6 +129,7 @@ main = do
              P.printf "          %-20s   %-7s   %-7s\n" hd1 hd2 hd3
              P.printf "--------------------------------------------------\n"
              forM_ defaultArgs (runBenchmark stdoutLock)
+             runThequeFs stdoutLock
              P.printf "\n---- Negative Benchmarks -------------------------\n"
              P.printf "          %-20s   %-7s   %-7s\n" hd1 hd2 hd3
              P.printf "--------------------------------------------------\n"
