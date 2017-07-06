@@ -124,24 +124,44 @@ seq([assign(a,anf0,cstr__MS(c_Set,d_Set,ds_dxYm)),assign(a,dll__dll__brisk_anf_d
 OK
 ```
 
-# Step-by-Step Instructions
+# Included Directory
 
-Our artifact contains 4 folders inside `~/Desktop/artifact/`:
+Our artifact contains 4 directories inside `~/Desktop/artifact/`:
+
+## brisk
+
+The `brisk` program and library is the core of the implementation of our
+analysis.
+`brisk` is implemented as a GHC plugin pass that computes a first-order term
+corresponding to the binders in a given module, and _stores_ this information
+in a table in the final, compiled Haskell module.
+The package includes specifications for some of the built-in message passing
+primitives as well as the specifications for the `Monad` typeclass instance for `Process`
+
+This package also includes our Prolog `IceT` rewriter.
 
 ## brisk-prelude
 
-...
+The `brisk-prelude` library includes `GHC` annotations for some common Haskell
+routines.
+The modules exported by `brisk-prelude` can be imported to bring the `brisk`
+annotations into scope: these annotations can then be used by the `brisk` tool.
 
-## brisk
+For example, `src/GHC/Base/Brisk.hs` includes annotations that specify
+the behavior of common functions like `($)` and `maybe`.
 
 ...
 
 ## thequefs
 
+This directory contains the `thequefs` implementation. To create a "closed
+world," we ran `brisk` on `app/Scenario.hs`, which spawns a number of clients who interact
+with the filesystem.
+
 ...
 
 ## brisk-benchmarks
 
-This folder simply contains the benchmarks we have used to evaluate our tool.
-Each folder in `brisk-benchmarks/src` contains a single benchmark.
+This directory simply contains the benchmarks we have used to evaluate our tool.
+Each directory in `brisk-benchmarks/src` contains a single benchmark.
 
